@@ -17,7 +17,7 @@ const roleSchema = {
   type: 'integer',
   enum: roleValues,
   description: `The new role to assign to the user. Available roles: ${roleCollection}.`,
-  example: RoleEnum.admin,
+  example: RoleEnum.user,
   'x-enumNames': roleNames,
 };
 

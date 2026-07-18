@@ -1,19 +1,20 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsOptional,
-  IsPhoneNumber,
   IsString,
   MinLength,
-  ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { lowerCaseTransformer } from '../../utils/transformers/lower-case.transformer';
 import { RoleEnum } from '../../utils/enums/roles.enum';
 
+/**
+ * Public registration DTO — role is ALWAYS forced to `user`.
+ * The role field is excluded from the API body; it's set automatically.
+ */
 export class CreateUserDto {
   @ApiProperty({ example: 'user@example.com' })
   @Transform(lowerCaseTransformer)
@@ -47,8 +48,7 @@ export class CreateUserDto {
   @IsString()
   profilePicture?: string | null;
 
-  // @ApiPropertyOptional({ enum: RoleEnum, example: RoleEnum.user })
-  // @IsOptional()
-  @IsEnum(RoleEnum)
+  // Role is always forced to `user` on public registration.
+  // Not exposed in Swagger — cannot be set by the client.
   role: RoleEnum = RoleEnum.user;
 }

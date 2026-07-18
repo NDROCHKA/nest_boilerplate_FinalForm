@@ -19,6 +19,8 @@ import {
   getSwaggerDarkCss,
   swaggerOptions,
 } from './swagger-ui/swagger.config';
+import { UserService } from './user/user.service';
+import { RoleEnum } from './utils/enums/roles.enum';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -67,6 +69,44 @@ async function bootstrap() {
     swaggerOptions,
     customCss: swaggerDarkCss,
   });
+
+  // Idempotently seed default users on startup
+  const userService = app.get(UserService);
+  
+  const superAdminEmail = 'cbksuperadmin@gmail.com';
+  const existingSuperAdmin = await userService.findOneByEmail({ email: superAdminEmail });
+  if (!existingSuperAdmin) {
+    const superAdmin = await userService.create({
+      createUserDto: {
+        email: superAdminEmail,
+        password: 'cbkthebest',
+        firstName: 'Super',
+        lastName: 'Admin',
+        phoneNumber: '+1234567890',
+        role: RoleEnum.superAdmin,
+      },
+    });
+    await userService.markEmailVerified({ id: superAdmin.id });
+    console.log('Seeded default superAdmin on startup: cbksuperadmin@gmail.com');
+  }
+
+  const userEmail = 'cbk@gmail.com';
+  const existingUser = await userService.findOneByEmail({ email: userEmail });
+  if (!existingUser) {
+    const regularUser = await userService.create({
+      createUserDto: {
+        email: userEmail,
+        password: 'cbkthebest',
+        firstName: 'Regular',
+        lastName: 'User',
+        phoneNumber: '+1234567892',
+        role: RoleEnum.user,
+      },
+    });
+    await userService.markEmailVerified({ id: regularUser.id });
+    console.log('Seeded default user on startup: cbk@gmail.com');
+  }
+
   await app.listen(configService.getOrThrow('app.port', { infer: true }));
 }
 bootstrap();

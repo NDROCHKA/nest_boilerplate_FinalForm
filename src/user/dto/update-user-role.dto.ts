@@ -11,7 +11,7 @@ export class UpdateUserRoleDto {
   @ApiProperty({
     enum: RoleEnum,
     enumName: 'RoleEnum',
-    example: RoleEnum.admin,
+    example: RoleEnum.user,
     description: `The new role to assign to the user. Available roles: ${roleOptionsDescription}.`,
   })
   @IsNotEmpty()

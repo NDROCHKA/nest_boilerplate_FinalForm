@@ -62,16 +62,6 @@ export class UserSeedService {
     );
     if (superAdminCreated) created = true;
 
-    // Admin user
-    const adminCreated = await createUserIfNotExists('cbkadmin@gmail.com', {
-      firstName: 'Admin',
-      lastName: 'User',
-      phoneNumber: '+1234567891',
-      profilePicture: null,
-      role: RoleEnum.admin,
-    });
-    if (adminCreated) created = true;
-
     // Regular user
     const userCreated = await createUserIfNotExists('cbk@gmail.com', {
       firstName: 'Regular',

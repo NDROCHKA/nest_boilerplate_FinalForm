@@ -26,6 +26,9 @@ export class User {
   profilePicture?: string | null;
 
   @Expose()
+  emailVerified: boolean;
+
+  @Expose()
   role: RoleEnum;
 
   @Expose()

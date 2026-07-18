@@ -44,3 +44,58 @@ export class AuthInvalidRefreshToken extends AuthException {
     );
   }
 }
+
+export class AuthEmailNotVerified extends AuthException {
+  constructor(details?: Record<string, unknown>) {
+    super(
+      'AUTH_EMAIL_NOT_VERIFIED',
+      'Please verify your email address before logging in.',
+      HttpStatus.FORBIDDEN,
+      details,
+    );
+  }
+}
+
+export class AuthOtpInvalid extends AuthException {
+  constructor(details?: Record<string, unknown>) {
+    super(
+      'AUTH_OTP_INVALID',
+      'The verification code is incorrect.',
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      details,
+    );
+  }
+}
+
+export class AuthOtpExpired extends AuthException {
+  constructor(details?: Record<string, unknown>) {
+    super(
+      'AUTH_OTP_EXPIRED',
+      'The verification code has expired. Please request a new one.',
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      details,
+    );
+  }
+}
+
+export class AuthOtpTooManyAttempts extends AuthException {
+  constructor(details?: Record<string, unknown>) {
+    super(
+      'AUTH_OTP_TOO_MANY_ATTEMPTS',
+      'Too many incorrect attempts. Please request a new verification code.',
+      HttpStatus.TOO_MANY_REQUESTS,
+      details,
+    );
+  }
+}
+
+export class AuthOtpResendTooSoon extends AuthException {
+  constructor(details?: Record<string, unknown>) {
+    super(
+      'AUTH_OTP_RESEND_TOO_SOON',
+      'Please wait before requesting a new verification code.',
+      HttpStatus.TOO_MANY_REQUESTS,
+      details,
+    );
+  }
+}

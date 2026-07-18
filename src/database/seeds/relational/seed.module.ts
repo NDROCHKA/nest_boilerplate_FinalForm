@@ -5,12 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { TypeOrmConfigService } from '../../typeorm-config.service';
 import { UserSeedModule } from './user/user-seed.module';
+import { CategorySeedModule } from './category/category-seed.module';
+import { ProductSeedModule } from './product/product-seed.module';
 import databaseConfig from '../../config/database.config';
 import appConfig from '../../../config/app.config';
 
 @Module({
   imports: [
     UserSeedModule,
+    CategorySeedModule,
+    ProductSeedModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, appConfig],

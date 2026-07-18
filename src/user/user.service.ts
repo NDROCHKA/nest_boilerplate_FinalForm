@@ -50,6 +50,7 @@ export class UserService {
       {
         ...createUserDto,
         password: hashedPassword,
+        emailVerified: false,
       },
       queryRunner,
     );
@@ -184,6 +185,16 @@ export class UserService {
     }
 
     return updated;
+  }
+
+  async markEmailVerified({
+    id,
+    queryRunner,
+  }: {
+    id: number;
+    queryRunner?: QueryRunner;
+  }): Promise<void> {
+    await this.userRepository.update(id, { emailVerified: true }, queryRunner);
   }
 
   private async hashPassword(password: string): Promise<string> {

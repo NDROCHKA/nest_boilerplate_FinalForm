@@ -35,6 +35,7 @@ export const userFindOneAuthLogin: RelationsAndSelectsOptions = {
   select: [
     'user.id',
     'user.email',
+    'user.emailVerified',
     'user.phoneNumber',
     'user.firstName',
     'user.lastName',

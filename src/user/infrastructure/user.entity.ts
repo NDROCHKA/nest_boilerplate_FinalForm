@@ -45,6 +45,9 @@ export class UserEntity {
   @Column({ type: 'varchar', nullable: true })
   profilePicture?: string | null;
 
+  @Column({ type: 'boolean', default: false })
+  emailVerified: boolean;
+
   @Column({ type: 'integer', nullable: false })
   role: RoleEnum;
 

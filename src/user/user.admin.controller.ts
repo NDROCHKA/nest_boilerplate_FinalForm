@@ -47,7 +47,7 @@ export class UserAdminController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiFindAllUsers()
-  @Roles(RoleEnum.admin)
+  @Roles(RoleEnum.superAdmin)
   async findAll(
     @Query() query: QueryUserDto,
     @TransactionQueryRunner() queryRunner: QueryRunner,
@@ -65,7 +65,7 @@ export class UserAdminController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @Roles(RoleEnum.admin)
+  @Roles(RoleEnum.superAdmin)
   @ApiFindOneUserById()
   async findOne(
     @Param('id', ParseIntPipe) id: number,

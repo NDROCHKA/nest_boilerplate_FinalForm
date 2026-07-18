@@ -6,16 +6,13 @@ import {
   HttpCode,
   HttpStatus,
   Patch,
-  Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiCreateUser } from './swagger/create-user.swagger';
 import { ApiFindOneUser } from './swagger/find-one-user.swagger';
 import { ApiUpdateUser } from './swagger/update-user.swagger';
 import { ApiDeleteUser } from './swagger/delete-user.swagger';
@@ -33,15 +30,8 @@ import { GetUser } from '../utils/decorators/getUser.decorator';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  @ApiCreateUser()
-  async create(
-    @Body() createUserDto: CreateUserDto,
-    @TransactionQueryRunner() queryRunner: QueryRunner,
-  ): Promise<User> {
-    return this.userService.create({ createUserDto, queryRunner });
-  }
+  // Registration has been moved to AuthController (POST /auth/email/register)
+  // This controller now only handles authenticated user operations.
 
   @Get()
   @HttpCode(HttpStatus.OK)

@@ -12,6 +12,7 @@ export class UserMapper {
     user.firstName = entity.firstName;
     user.lastName = entity.lastName;
     user.profilePicture = entity.profilePicture;
+    user.emailVerified = entity.emailVerified ?? false;
     user.role = entity.role ?? null;
     user.createdAt = entity.createdAt;
     user.updatedAt = entity.updatedAt;
@@ -33,6 +34,7 @@ export class UserMapper {
     entity.firstName = user.firstName;
     entity.lastName = user.lastName;
     entity.profilePicture = user.profilePicture;
+    entity.emailVerified = user.emailVerified ?? false;
     entity.role = user.role;
 
     return entity;

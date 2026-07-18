@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 
 import { UserService } from '../user/user.service';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
@@ -9,10 +10,24 @@ import {
   AuthIncorrectPassword,
   AuthUserNotFound,
   AuthInvalidRefreshToken,
+  AuthEmailNotVerified,
+  AuthOtpInvalid,
+  AuthOtpExpired,
+  AuthOtpTooManyAttempts,
+  AuthOtpResendTooSoon,
 } from './exceptions/auth.exceptions';
 import { AllConfigType } from '../config/config.type';
 import { User } from '../user/domain/user';
 import { userFindOneAuthLogin } from '../user/infrastructure/relations-and-selects-options';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { RoleEnum } from '../utils/enums/roles.enum';
+import { OtpRepository } from './infrastructure/otp.repository';
+import { OtpTypeEnum } from '../utils/enums/otp-type.enum';
+import { MailService } from '../mail/mail.service';
+
+const OTP_EXPIRY_MINUTES = 5;
+const OTP_MAX_ATTEMPTS = 5;
+const OTP_RESEND_COOLDOWN_SECONDS = 60;
 
 @Injectable()
 export class AuthService {
@@ -20,7 +35,162 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly configService: ConfigService<AllConfigType>,
+    private readonly otpRepository: OtpRepository,
+    private readonly mailService: MailService,
   ) {}
+
+  // ─── Registration ──────────────────────────────────────────────
+
+  async register(createUserDto: CreateUserDto): Promise<{ message: string }> {
+    // Force role to user — public registration can never create admins
+    createUserDto.role = RoleEnum.user;
+
+    const user = await this.userService.create({ createUserDto });
+
+    // Generate and send OTP
+    await this.generateAndSendOtp(user.id, user.email!, user.firstName);
+
+    return {
+      message:
+        'Account created. Please check your email for the verification code.',
+    };
+  }
+
+  // ─── OTP Generation ────────────────────────────────────────────
+
+  async generateAndSendOtp(
+    userId: number,
+    email: string,
+    userName?: string | null,
+  ): Promise<void> {
+    // Generate a 6-digit code
+    const otpCode = crypto.randomInt(100000, 999999).toString();
+
+    // Hash the code before storing
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(otpCode, salt);
+
+    // Delete any existing OTPs for this user + type (one active at a time)
+    await this.otpRepository.deleteAllByUserAndType(
+      userId,
+      OtpTypeEnum.EMAIL_VERIFICATION,
+    );
+
+    // Save hashed OTP with expiry
+    const expiresAt = new Date(
+      Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000,
+    );
+
+    await this.otpRepository.create({
+      userId,
+      hash,
+      type: OtpTypeEnum.EMAIL_VERIFICATION,
+      expiresAt,
+    });
+
+    // Send email
+    await this.mailService.sendOtp(email, otpCode, userName ?? undefined);
+  }
+
+  // ─── OTP Verification ──────────────────────────────────────────
+
+  async verifyOtp(
+    email: string,
+    otpCode: string,
+  ): Promise<{ message: string }> {
+    // Find user by email
+    const user = await this.userService.findOneByEmail({ email });
+
+    if (!user) {
+      throw new AuthUserNotFound({ email });
+    }
+
+    // If already verified, return success (idempotent)
+    if (user.emailVerified) {
+      return { message: 'Email is already verified.' };
+    }
+
+    // Find latest OTP
+    const otp = await this.otpRepository.findLatestByUserAndType(
+      user.id,
+      OtpTypeEnum.EMAIL_VERIFICATION,
+    );
+
+    if (!otp) {
+      throw new AuthOtpInvalid();
+    }
+
+    // Check max attempts
+    if (otp.attempts >= OTP_MAX_ATTEMPTS) {
+      throw new AuthOtpTooManyAttempts();
+    }
+
+    // Check expiry
+    if (otp.expiresAt < new Date()) {
+      throw new AuthOtpExpired();
+    }
+
+    // Compare OTP
+    const isValid = await bcrypt.compare(otpCode, otp.hash);
+
+    if (!isValid) {
+      // Increment attempt counter
+      await this.otpRepository.incrementAttempts(otp.id);
+      throw new AuthOtpInvalid();
+    }
+
+    // OTP is valid — mark email as verified
+    await this.userService.markEmailVerified({ id: user.id });
+
+    // Clean up OTP records
+    await this.otpRepository.deleteAllByUserAndType(
+      user.id,
+      OtpTypeEnum.EMAIL_VERIFICATION,
+    );
+
+    return { message: 'Email verified successfully.' };
+  }
+
+  // ─── Resend OTP ────────────────────────────────────────────────
+
+  async resendOtp(email: string): Promise<{ message: string }> {
+    const genericMessage =
+      'If your email is registered and unverified, a new verification code has been sent.';
+
+    // Find user — return generic message to prevent email enumeration
+    const user = await this.userService.findOneByEmail({ email });
+
+    if (!user) {
+      return { message: genericMessage };
+    }
+
+    // If already verified, just return generic message
+    if (user.emailVerified) {
+      return { message: genericMessage };
+    }
+
+    // Check cooldown — don't allow resend if last OTP was sent < 60s ago
+    const existingOtp = await this.otpRepository.findLatestByUserAndType(
+      user.id,
+      OtpTypeEnum.EMAIL_VERIFICATION,
+    );
+
+    if (existingOtp) {
+      const secondsSinceCreated =
+        (Date.now() - existingOtp.createdAt.getTime()) / 1000;
+
+      if (secondsSinceCreated < OTP_RESEND_COOLDOWN_SECONDS) {
+        throw new AuthOtpResendTooSoon();
+      }
+    }
+
+    // Generate and send new OTP
+    await this.generateAndSendOtp(user.id, user.email!, user.firstName);
+
+    return { message: genericMessage };
+  }
+
+  // ─── Login ─────────────────────────────────────────────────────
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<{
     token: string;
@@ -37,6 +207,13 @@ export class AuthService {
     // If user not found throw exception
     if (!user) {
       throw new AuthUserNotFound({
+        email: loginDto.email,
+      });
+    }
+
+    // Block login if email is not verified
+    if (!user.emailVerified) {
+      throw new AuthEmailNotVerified({
         email: loginDto.email,
       });
     }
@@ -71,6 +248,8 @@ export class AuthService {
       user,
     };
   }
+
+  // ─── Refresh Token ─────────────────────────────────────────────
 
   async refreshToken(refreshToken: string): Promise<{
     token: string;
@@ -111,6 +290,8 @@ export class AuthService {
       throw new AuthInvalidRefreshToken();
     }
   }
+
+  // ─── Token Generation (Private) ────────────────────────────────
 
   private async getTokensData(data: {
     id: User['id'];
