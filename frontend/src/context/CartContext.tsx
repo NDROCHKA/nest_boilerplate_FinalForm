@@ -23,12 +23,21 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalAmount: number;
+  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
+  toggleCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+
+  const openCart = () => setIsCartOpen(true);
+  const closeCart = () => setIsCartOpen(false);
+  const toggleCart = () => setIsCartOpen((prev) => !prev);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -82,6 +91,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
       saveCart([...items, newItem]);
     }
+
+    // Automatically slide open cart drawer when item is added
+    openCart();
   };
 
   const removeItem = (productId: number, size: string, color: string) => {
@@ -130,6 +142,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         clearCart,
         totalItems,
         totalAmount,
+        isCartOpen,
+        openCart,
+        closeCart,
+        toggleCart,
       }}
     >
       {children}

@@ -5,10 +5,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { Button } from '../ui/Button';
 import { getDailyPsalm } from '../../utils/psalms';
+import { CartDrawer } from '../cart/CartDrawer';
+import { MobileBottomNav } from './MobileBottomNav';
+
+import { CrusaderLogo } from '../brand/CrusaderLogo';
 
 export const StoreLayout: React.FC = () => {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
-  const { totalItems } = useCart();
+  const { totalItems, openCart } = useCart();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dailyPsalm = getDailyPsalm();
@@ -22,6 +26,7 @@ export const StoreLayout: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Daily Psalm Announcement Bar */}
       <div
+        className="announcement-bar"
         style={{
           background: '#08080c',
           borderBottom: '1px solid rgba(214, 48, 49, 0.15)',
@@ -41,7 +46,7 @@ export const StoreLayout: React.FC = () => {
       >
         <span style={{ color: 'var(--color-accent)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <span style={{ display: 'inline-block', width: '6px', height: '6px', backgroundColor: 'var(--color-accent)', borderRadius: '50%' }}></span>
-          Daily Armor
+          Daily Verse
         </span>
         <span style={{ color: 'var(--color-text-muted)' }}>•</span>
         <span style={{ color: 'var(--color-text-primary)', fontStyle: 'italic' }}>"{dailyPsalm.text}"</span>
@@ -60,6 +65,7 @@ export const StoreLayout: React.FC = () => {
         }}
       >
         <div
+          className="store-header-inner"
           style={{
             maxWidth: '1200px',
             margin: '0 auto',
@@ -70,45 +76,8 @@ export const StoreLayout: React.FC = () => {
           }}
         >
           {/* Logo */}
-          <Link
-            to="/"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '1.25rem',
-              fontWeight: 800,
-              letterSpacing: '-0.03em',
-              color: 'var(--color-text-primary)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-            }}
-          >
-            {/* Cedar tree inside crown of thorns SVG */}
-            <svg width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }} className="animate-logo-pulse">
-              {/* Thorns circle */}
-              <circle cx="50" cy="50" r="42" stroke="white" strokeWidth="2.5" strokeDasharray="6 4" />
-              {/* Little thorn spikes */}
-              <path d="M50 4 L53 11 L47 11 Z" fill="white" />
-              <path d="M96 50 L89 53 L89 47 Z" fill="white" />
-              <path d="M50 96 L47 89 L53 89 Z" fill="white" />
-              <path d="M4 50 L11 47 L11 53 Z" fill="white" />
-              <path d="M18 18 L24 23 L21 26 Z" fill="white" />
-              <path d="M82 18 L76 23 L79 26 Z" fill="white" />
-              <path d="M82 82 L76 77 L79 74 Z" fill="white" />
-              <path d="M18 82 L24 77 L21 74 Z" fill="white" />
-              
-              {/* Cedar Tree */}
-              {/* Trunk */}
-              <rect x="47.5" y="66" width="5" height="13" fill="white" />
-              {/* Branches */}
-              <polygon points="50,20 32,44 68,44" fill="white" />
-              <polygon points="50,35 26,58 74,58" fill="white" />
-              <polygon points="50,48 20,70 80,70" fill="white" />
-            </svg>
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.05 }}>
-              <span style={{ fontSize: '1.05rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em' }}>Crusader</span>
-              <span style={{ fontSize: '0.625rem', fontWeight: 600, color: 'var(--color-text-secondary)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>COLLECTIVE</span>
-            </div>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <CrusaderLogo size={38} showText={true} />
           </Link>
 
           {/* Desktop Nav */}
@@ -140,6 +109,36 @@ export const StoreLayout: React.FC = () => {
             >
               Shop
             </NavLink>
+            <NavLink
+              to="/about"
+              style={({ isActive }) => ({
+                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+              })}
+            >
+              Our Story
+            </NavLink>
+            <NavLink
+              to="/faq"
+              style={({ isActive }) => ({
+                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+              })}
+            >
+              FAQ & Delivery
+            </NavLink>
+            <NavLink
+              to="/size-guide"
+              style={({ isActive }) => ({
+                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+              })}
+            >
+              Size Guide
+            </NavLink>
             {isAuthenticated && (
               <NavLink
                 to="/my-orders"
@@ -165,9 +164,9 @@ export const StoreLayout: React.FC = () => {
               </Link>
             )}
 
-            {/* Cart Icon */}
-            <Link
-              to="/cart"
+            {/* Cart Icon Button (opens slide-out drawer) */}
+            <button
+              onClick={openCart}
               style={{
                 position: 'relative',
                 color: 'var(--color-text-primary)',
@@ -177,7 +176,10 @@ export const StoreLayout: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: 'var(--color-bg-glass)',
+                border: 'none',
+                cursor: 'pointer',
               }}
+              title="Shopping Bag"
             >
               <ShoppingBag size={20} />
               {totalItems > 0 && (
@@ -202,7 +204,7 @@ export const StoreLayout: React.FC = () => {
                   {totalItems}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* User Dropdown/Links */}
             {isAuthenticated ? (
@@ -227,7 +229,7 @@ export const StoreLayout: React.FC = () => {
                 </Button>
               </div>
             ) : (
-              <Link to="/login">
+              <Link to="/login" className="desktop-login-btn">
                 <Button variant="primary">Login</Button>
               </Link>
             )}
@@ -244,11 +246,20 @@ export const StoreLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* CSS workaround for responsive nav display */}
+        {/* Responsive nav — desktop shows links, mobile shows hamburger */}
         <style>{`
-          .desktop-nav { display: flex !important; }
-          .desktop-username { display: inline !important; }
-          .mobile-toggle { display: none !important; }
+          @media (min-width: 769px) {
+            .desktop-nav { display: flex !important; }
+            .desktop-username { display: inline !important; }
+            .desktop-login-btn { display: block !important; }
+            .mobile-toggle { display: none !important; }
+          }
+          @media (max-width: 768px) {
+            .desktop-nav { display: none !important; }
+            .desktop-username { display: none !important; }
+            .desktop-login-btn { display: none !important; }
+            .mobile-toggle { display: flex !important; }
+          }
         `}</style>
       </header>
 
@@ -256,43 +267,76 @@ export const StoreLayout: React.FC = () => {
       {mobileMenuOpen && (
         <div
           style={{
-            background: 'var(--color-bg-secondary)',
-            borderBottom: '1px solid var(--color-border)',
-            padding: '1.5rem',
+            position: 'fixed',
+            top: '57px',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(5, 5, 7, 0.96)',
+            backdropFilter: 'blur(16px)',
+            padding: '2rem 1.5rem',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem',
-            zIndex: 99,
+            gap: '1.25rem',
+            zIndex: 999,
+            overflowY: 'auto',
           }}
-          className="animate-slide-up"
         >
-          <Link to="/" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-          <Link to="/products" onClick={() => setMobileMenuOpen(false)}>Shop</Link>
+          {!isAuthenticated && (
+            <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="primary" style={{ width: '100%', height: '3rem', fontSize: '1rem' }}>
+                Login to Account
+              </Button>
+            </Link>
+          )}
+
+          <Link to="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-primary)', textDecoration: 'none', padding: '0.5rem 0' }}>Home</Link>
+          <Link to="/products" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-primary)', textDecoration: 'none', padding: '0.5rem 0' }}>Shop Catalog</Link>
+          <Link to="/about" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-primary)', textDecoration: 'none', padding: '0.5rem 0' }}>Our Story</Link>
+          <Link to="/faq" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-primary)', textDecoration: 'none', padding: '0.5rem 0' }}>FAQ & Delivery</Link>
+          <Link to="/size-guide" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-primary)', textDecoration: 'none', padding: '0.5rem 0' }}>Size Guide</Link>
           {isAuthenticated && (
-            <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)}>My Orders</Link>
+            <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--color-text-primary)', textDecoration: 'none', padding: '0.5rem 0' }}>My Orders</Link>
           )}
         </div>
       )}
 
       {/* Main Content */}
-      <main style={{ flex: 1, width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+      <main className="store-main" style={{ flex: 1, width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
         <Outlet />
       </main>
 
       {/* Footer */}
       <footer
+        className="store-footer"
         style={{
           borderTop: '1px solid var(--color-border)',
           background: 'var(--color-bg-secondary)',
           padding: '2.5rem 1.5rem',
           textAlign: 'center',
           marginTop: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1rem',
         }}
       >
-        <p style={{ fontSize: '0.875rem' }}>
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center', fontSize: '0.875rem' }}>
+          <Link to="/about" style={{ color: 'var(--color-text-secondary)' }}>Our Story</Link>
+          <Link to="/faq" style={{ color: 'var(--color-text-secondary)' }}>FAQ & Lebanon Delivery</Link>
+          <Link to="/size-guide" style={{ color: 'var(--color-text-secondary)' }}>Official Size Guide</Link>
+          <Link to="/products" style={{ color: 'var(--color-text-secondary)' }}>Catalog</Link>
+        </div>
+        <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', margin: 0 }}>
           &copy; {new Date().getFullYear()} Crusaders E-Commerce Platform. All rights reserved.
         </p>
       </footer>
+
+      {/* Feature 2: Slide-Out Cart Drawer */}
+      <CartDrawer />
+
+      {/* Feature 1: Mobile Bottom Navigation Bar */}
+      <MobileBottomNav />
     </div>
   );
 };

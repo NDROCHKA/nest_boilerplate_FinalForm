@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { OrderRepository } from './infrastructure/order.repository';
 import { ProductRepository } from '../product/infrastructure/product.repository';
+import { UserRepository } from '../user/infrastructure/user.repository';
+import { MailService } from '../mail/mail.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Order } from './domain/order';
 import { OrderStatusEnum } from '../utils/enums/order-status.enum';
@@ -20,9 +22,13 @@ import { QueryRunner } from 'typeorm';
 
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name);
+
   constructor(
     private readonly orderRepository: OrderRepository,
     private readonly productRepository: ProductRepository,
+    private readonly userRepository: UserRepository,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -226,13 +232,19 @@ export class OrderService {
     const validTransitions: Record<string, OrderStatusEnum[]> = {
       [OrderStatusEnum.pending]: [
         OrderStatusEnum.confirmed,
+        OrderStatusEnum.shipped,
+        OrderStatusEnum.delivered,
         OrderStatusEnum.cancelled,
       ],
       [OrderStatusEnum.confirmed]: [
         OrderStatusEnum.shipped,
+        OrderStatusEnum.delivered,
         OrderStatusEnum.cancelled,
       ],
-      [OrderStatusEnum.shipped]: [OrderStatusEnum.delivered],
+      [OrderStatusEnum.shipped]: [
+        OrderStatusEnum.delivered,
+        OrderStatusEnum.cancelled,
+      ],
       [OrderStatusEnum.delivered]: [], // Terminal state
       [OrderStatusEnum.cancelled]: [], // Terminal state
     };
@@ -256,6 +268,36 @@ export class OrderService {
       throw new OrderNotFoundException({ id });
     }
 
+    // Trigger email notifications asynchronously
+    this.sendNotificationEmail(updated.id, status).catch((err) => {
+      this.logger.error(
+        `Failed sending notification email for order #${id}: ${err instanceof Error ? err.message : err}`,
+      );
+    });
+
     return updated;
+  }
+
+  private async sendNotificationEmail(
+    orderId: number,
+    status: OrderStatusEnum,
+  ): Promise<void> {
+    const fullOrder = await this.orderRepository.findOne({ id: orderId });
+    if (!fullOrder || !fullOrder.userId) return;
+
+    const user = await this.userRepository.findOne({
+      fields: { id: fullOrder.userId },
+    });
+
+    const userEmail = user?.email;
+    const userName = user?.firstName || undefined;
+
+    if (!userEmail) return;
+
+    if (status === OrderStatusEnum.confirmed) {
+      await this.mailService.sendOrderConfirmed(userEmail, orderId, userName);
+    } else if (status === OrderStatusEnum.delivered) {
+      await this.mailService.sendOrderDelivered(userEmail, orderId, userName);
+    }
   }
 }

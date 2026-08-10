@@ -66,7 +66,7 @@ export const CheckoutPage: React.FC = () => {
     }
   };
 
-  const shipping = totalAmount >= 100 ? 0 : 9.99;
+  const shipping = 0;
   const grandTotal = totalAmount + shipping;
 
   return (
@@ -78,6 +78,7 @@ export const CheckoutPage: React.FC = () => {
       </div>
 
       <div
+        className="checkout-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
@@ -133,7 +134,7 @@ export const CheckoutPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+          <div className="checkout-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
             <Link to="/cart">
               <Button variant="secondary" disabled={isSubmitting}>
                 <ArrowLeft size={16} />
@@ -177,8 +178,8 @@ export const CheckoutPage: React.FC = () => {
               <span>${totalAmount.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Shipping</span>
-              <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+              <span style={{ color: 'var(--color-text-secondary)' }}>Lebanon Delivery (4-7 Days)</span>
+              <span style={{ fontWeight: 600 }}>$4.00</span>
             </div>
           </div>
 
@@ -186,7 +187,7 @@ export const CheckoutPage: React.FC = () => {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.125rem' }}>
             <span>Total</span>
-            <span style={{ color: 'var(--color-accent)' }}>${grandTotal.toFixed(2)}</span>
+            <span style={{ color: 'var(--color-accent)' }}>${(totalAmount + 4).toFixed(2)}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem' }}>

@@ -8,11 +8,15 @@ import { OrderEntity } from './infrastructure/order.entity';
 import { OrderItemEntity } from './infrastructure/order-item.entity';
 import { OrderRepository } from './infrastructure/order.repository';
 import { ProductModule } from '../product/product.module';
+import { MailModule } from '../mail/mail.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([OrderEntity, OrderItemEntity]),
     ProductModule, // Needed for product validation during order creation
+    MailModule,
+    UserModule,
   ],
   controllers: [OrderController, OrderAdminController],
   providers: [OrderService, OrderRepository],

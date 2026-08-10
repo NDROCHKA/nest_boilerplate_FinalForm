@@ -14,6 +14,8 @@ import { Spinner } from '../../components/ui/Spinner';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Link } from 'react-router-dom';
 
+import { resolveImageUrl } from '../../utils/imageUrl';
+
 export const ProductsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -104,27 +106,27 @@ export const ProductsPage: React.FC = () => {
 
       {/* Filters Bar */}
       <div
-        className="glass-panel"
+        className="catalog-filters-wrap"
         style={{
-          padding: '1.25rem 1.5rem',
           display: 'flex',
-          flexWrap: 'wrap',
-          gap: '1.25rem',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
+          gap: '0.75rem',
+          width: '100%',
         }}
       >
-        <div style={{ display: 'flex', flex: 1, minWidth: '280px', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', width: '100%' }}>
           {/* Search bar */}
-          <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+          <div className="filter-search-box" style={{ position: 'relative', flex: '1 1 200px', width: '100%' }}>
             <Search
               size={18}
               style={{
                 position: 'absolute',
-                left: '12px',
+                left: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 color: 'var(--color-text-muted)',
+                pointerEvents: 'none',
+                zIndex: 2,
               }}
             />
             <input
@@ -132,16 +134,16 @@ export const ProductsPage: React.FC = () => {
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ paddingLeft: '2.5rem' }}
+              className="catalog-search-input"
             />
           </div>
 
           {/* Category Filter */}
-          <div style={{ minWidth: '200px' }}>
+          <div className="filter-category-box" style={{ flex: '1 1 200px', width: '100%' }}>
             <select
               value={categoryId || ''}
               onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}
-              style={{ width: '100%' }}
+              className="catalog-category-select"
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
@@ -153,7 +155,7 @@ export const ProductsPage: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+        <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', textAlign: 'right' }}>
           Showing {products.length} of {totalCount} items
         </div>
       </div>
@@ -172,31 +174,60 @@ export const ProductsPage: React.FC = () => {
       ) : (
         <>
           <div
+            className="product-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-              gap: '1.5rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+              gap: '1.25rem',
             }}
           >
             {products.map((prod) => {
               const thumbnail = prod.images && prod.images.length > 0
-                ? prod.images.sort((a, b) => a.sortOrder - b.sortOrder)[0].url
+                ? resolveImageUrl(prod.images.sort((a, b) => a.sortOrder - b.sortOrder)[0].url)
                 : null;
 
               return (
-                <div key={prod.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
-                  <Link to={`/products/${prod.id}`} style={{ position: 'relative', display: 'block', overflow: 'hidden', borderRadius: 'var(--radius-md)', height: '220px', background: 'var(--color-bg-tertiary)' }}>
+                <div
+                  key={prod.id}
+                  className="glass-card product-item-card"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                    height: '100%',
+                    padding: '1rem',
+                    borderRadius: 'var(--radius-lg)',
+                  }}
+                >
+                  <Link
+                    to={`/products/${prod.id}`}
+                    className="product-image-link"
+                    style={{
+                      position: 'relative',
+                      display: 'block',
+                      overflow: 'hidden',
+                      borderRadius: 'var(--radius-md)',
+                      height: '200px',
+                      width: '100%',
+                      background: 'var(--color-bg-tertiary)',
+                    }}
+                  >
                     {thumbnail ? (
                       <img
                         src={thumbnail}
                         alt={prod.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform var(--transition-normal)' }}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform var(--transition-normal)',
+                        }}
                         onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
                         onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                       />
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-muted)' }}>
-                        <ShoppingBag size={48} />
+                        <ShoppingBag size={44} />
                       </div>
                     )}
 
@@ -204,13 +235,13 @@ export const ProductsPage: React.FC = () => {
                       <span
                         style={{
                           position: 'absolute',
-                          top: '12px',
-                          left: '12px',
-                          background: 'var(--color-danger)',
+                          top: '10px',
+                          left: '10px',
+                          background: 'var(--color-accent)',
                           color: 'white',
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
+                          padding: '0.2rem 0.5rem',
+                          fontSize: '0.7rem',
+                          fontWeight: 800,
                           borderRadius: '4px',
                         }}
                       >
@@ -219,25 +250,35 @@ export const ProductsPage: React.FC = () => {
                     )}
                   </Link>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 600, textTransform: 'uppercase' }}>
-                      {prod.categoryName || 'General'}
+                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '0.35rem' }}>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--color-accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {prod.categoryName || 'Collection'}
                     </span>
-                    <Link to={`/products/${prod.id}`} style={{ color: 'var(--color-text-primary)' }}>
-                      <h4 style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <Link to={`/products/${prod.id}`} style={{ color: 'var(--color-text-primary)', textDecoration: 'none' }}>
+                      <h4
+                        className="product-card-title"
+                        style={{
+                          margin: 0,
+                          fontSize: '0.95rem',
+                          fontWeight: 700,
+                          lineHeight: 1.3,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          height: '2.4rem',
+                        }}
+                      >
                         {prod.name}
                       </h4>
                     </Link>
-                    <p style={{ fontSize: '0.875rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: '2.5rem' }}>
-                      {prod.description}
-                    </p>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: 'auto' }}>
-                      <span style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 'auto', paddingTop: '0.35rem' }}>
+                      <span className="product-card-price" style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>
                         ${prod.effectivePrice.toFixed(2)}
                       </span>
                       {prod.discountPercent && prod.discountPercent > 0 && (
-                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
                           ${prod.price.toFixed(2)}
                         </span>
                       )}

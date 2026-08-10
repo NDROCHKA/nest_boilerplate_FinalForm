@@ -28,7 +28,7 @@ export const CartPage: React.FC = () => {
     );
   }
 
-  const shipping = totalAmount >= 100 ? 0 : 9.99;
+  const shipping = 0;
   const orderTotal = parseFloat((totalAmount + shipping).toFixed(2));
 
   return (
@@ -41,6 +41,7 @@ export const CartPage: React.FC = () => {
 
       {/* Grid */}
       <div
+        className="cart-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
@@ -53,7 +54,7 @@ export const CartPage: React.FC = () => {
           {items.map((item) => (
             <div
               key={`${item.productId}-${item.selectedSize}-${item.selectedColor}`}
-              className="glass-panel"
+              className="glass-panel cart-item"
               style={{
                 padding: '1.25rem',
                 display: 'flex',
@@ -121,7 +122,7 @@ export const CartPage: React.FC = () => {
               </div>
 
               {/* Total Item Price & Delete */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', justifyContent: 'space-between', minWidth: '120px' }}>
+              <div className="cart-item-actions" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', justifyContent: 'space-between', minWidth: '120px' }}>
                 <span style={{ fontWeight: 700, fontSize: '1rem' }}>
                   ${(item.effectivePrice * item.quantity).toFixed(2)}
                 </span>
@@ -149,13 +150,8 @@ export const CartPage: React.FC = () => {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--color-text-secondary)' }}>Shipping</span>
-              <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+              <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>Free</span>
             </div>
-            {shipping > 0 && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)' }}>
-                Add ${(100 - totalAmount).toFixed(2)} more to unlock free shipping!
-              </span>
-            )}
           </div>
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)' }} />

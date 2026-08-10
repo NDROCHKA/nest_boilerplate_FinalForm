@@ -4,7 +4,8 @@ import { authApi } from '../../api/auth.api';
 import { useToast } from '../../context/ToastContext';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Shield } from 'lucide-react';
+import { Shield, ArrowLeft, X } from 'lucide-react';
+import { CrusaderLogo } from '../../components/brand/CrusaderLogo';
 
 export const RegisterPage: React.FC = () => {
   const { showToast } = useToast();
@@ -53,7 +54,9 @@ export const RegisterPage: React.FC = () => {
         lastName,
       });
       showToast(res.message || 'Account created successfully! Please verify your email.', 'success');
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`, {
+        state: { email, password },
+      });
     } catch (err: any) {
       console.error(err);
       showToast(err.message || 'Registration failed. Try again.', 'error');
@@ -74,13 +77,60 @@ export const RegisterPage: React.FC = () => {
       }}
     >
       <div
-        className="glass-card animate-slide-up"
+        className="glass-card animate-slide-up auth-card"
         style={{
           width: '100%',
           maxWidth: '450px',
           padding: '2.5rem 2rem',
+          position: 'relative',
         }}
       >
+        {/* Exit / Back Button Header */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1.25rem',
+          }}
+        >
+          <Link
+            to="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              color: 'var(--color-text-secondary)',
+              fontSize: '0.8125rem',
+              textDecoration: 'none',
+              fontWeight: 500,
+            }}
+          >
+            <ArrowLeft size={16} />
+            <span>Back to Shop</span>
+          </Link>
+
+          <Link
+            to="/"
+            title="Exit to Storefront"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-secondary)',
+              textDecoration: 'none',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <X size={18} />
+          </Link>
+        </div>
+
         {/* Brand */}
         <div
           style={{
@@ -90,20 +140,8 @@ export const RegisterPage: React.FC = () => {
             marginBottom: '2rem',
           }}
         >
-          <div
-            style={{
-              background: 'var(--color-accent-gradient)',
-              padding: '0.6rem',
-              borderRadius: '12px',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '0.75rem',
-              boxShadow: 'var(--shadow-glow)',
-            }}
-          >
-            <Shield size={28} />
+          <div style={{ marginBottom: '0.75rem' }}>
+            <CrusaderLogo size={64} variant="image" />
           </div>
           <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.03em' }}>
             Create Account
@@ -113,7 +151,7 @@ export const RegisterPage: React.FC = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div className="register-name-row" style={{ display: 'flex', gap: '1rem' }}>
             <Input
               label="First Name"
               placeholder="Jane"
@@ -169,6 +207,7 @@ export const RegisterPage: React.FC = () => {
           <Button
             type="submit"
             variant="primary"
+            className="auth-submit-btn"
             style={{ width: '100%', marginTop: '0.5rem', height: '2.75rem' }}
             isLoading={isLoading}
           >

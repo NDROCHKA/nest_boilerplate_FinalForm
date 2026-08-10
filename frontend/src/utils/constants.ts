@@ -1,5 +1,15 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const getApiBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  const hostname =
+    typeof window !== 'undefined' && window.location.hostname
+      ? window.location.hostname
+      : 'localhost';
+  return `http://${hostname}:3000/api/v1`;
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export const STORAGE_KEYS = {
   TOKEN: 'crusaders_token',

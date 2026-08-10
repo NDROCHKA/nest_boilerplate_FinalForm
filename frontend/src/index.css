@@ -347,6 +347,11 @@ tr:hover td {
   100% { background-position: 0% 50%; }
 }
 
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
 .animate-fade-in {
   animation: fadeIn var(--transition-normal) forwards;
 }
@@ -479,4 +484,435 @@ button:active:not(:disabled),
 .marquee-content:hover {
   animation-play-state: paused;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — 768px and below
+   Every property uses !important to override inline React styles
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Typography — scale down all headings ── */
+  h1 { font-size: 1.75rem !important; }
+  h2 { font-size: 1.375rem !important; }
+  h3 { font-size: 1.125rem !important; }
+  h4 { font-size: 1rem !important; }
+
+  /* ── Buttons — 48px min touch target ── */
+  button, .btn {
+    min-height: 44px !important;
+  }
+  .btn-primary, .btn-secondary, .btn-danger {
+    font-size: 0.9375rem !important;
+    padding: 0.75rem 1.25rem !important;
+    min-height: 48px !important;
+  }
+
+  /* ── Inputs — 16px font prevents iOS zoom, 48px height ── */
+  input, select, textarea {
+    font-size: 1rem !important;
+    padding: 0.875rem 1rem !important;
+    min-height: 48px !important;
+  }
+
+  label {
+    font-size: 0.9375rem !important;
+  }
+
+  /* ── Glass panels / cards ── */
+  .glass-card {
+    padding: 1.25rem !important;
+  }
+
+  /* ── Navigation — show hamburger, hide desktop links ── */
+  .desktop-nav { display: none !important; }
+  .desktop-username { display: none !important; }
+  .mobile-toggle { display: flex !important; }
+
+  /* ── Announcement Bar ── */
+  .announcement-bar {
+    font-size: 0.6875rem !important;
+    padding: 0.35rem 0.75rem !important;
+  }
+
+  /* ── Header ── */
+  .store-header-inner {
+    padding: 0.75rem 1rem !important;
+  }
+
+  /* ── Mobile Nav Drawer links ── */
+  .mobile-drawer a {
+    font-size: 1.125rem !important;
+    padding: 0.875rem 0 !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    display: block !important;
+  }
+  .mobile-drawer a:last-child {
+    border-bottom: none !important;
+  }
+
+  /* ── Main content area ── */
+  .store-main {
+    padding: 1.25rem 1rem !important;
+  }
+
+  /* ── Footer ── */
+  .store-footer {
+    padding: 1.75rem 1rem !important;
+  }
+  .store-footer p {
+    font-size: 0.8125rem !important;
+  }
+
+  /* ── Hero Section ── */
+  .hero-section {
+    padding: 1.75rem 1rem !important;
+    min-height: auto !important;
+    gap: 1.25rem !important;
+    text-align: center !important;
+  }
+  .hero-text-col {
+    flex: 1 1 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.85rem !important;
+  }
+  .hero-heading {
+    font-size: 2.25rem !important;
+    line-height: 1.1 !important;
+    margin: 0 !important;
+  }
+  .hero-description {
+    font-size: 0.95rem !important;
+    max-width: 320px !important;
+    margin: 0 !important;
+  }
+  .hero-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  .hero-buttons a {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: block !important;
+  }
+  .hero-buttons button {
+    width: 100% !important;
+    padding: 0.65rem 0.4rem !important;
+    font-size: 0.825rem !important;
+    justify-content: center !important;
+  }
+  .hero-emblem-col {
+    flex: 1 1 100% !important;
+    min-width: unset !important;
+    width: 100% !important;
+    margin-top: 0.25rem !important;
+  }
+  .hero-emblem-ring {
+    width: 165px !important;
+    height: 165px !important;
+    margin: 0 auto !important;
+  }
+  .hero-emblem-ring .crusader-logo-wrap > div {
+    width: 145px !important;
+    height: 145px !important;
+  }
+
+  /* ── Home page section gap ── */
+  .home-page {
+    gap: 2.5rem !important;
+  }
+
+  /* ── Scripture card ── */
+  .scripture-card {
+    padding: 1.75rem 1.25rem !important;
+  }
+  .scripture-text {
+    font-size: 1.15rem !important;
+  }
+
+  /* ── Category grid — 2 columns on Mobile ── */
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+  .category-card {
+    padding: 1rem 0.65rem !important;
+  }
+  .category-card img,
+  .category-icon-placeholder {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .category-card-desc {
+    display: none !important;
+  }
+  .category-card h4 {
+    font-size: 0.875rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* ── Product grids — 2 columns on Mobile Phone (Strict Containment) ── */
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .product-grid .glass-card,
+  .product-item-card {
+    padding: 0.65rem !important;
+    border-radius: var(--radius-md) !important;
+    gap: 0.4rem !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  .product-image-link {
+    height: 160px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: var(--radius-sm) !important;
+    box-sizing: border-box !important;
+  }
+  .product-card-desc {
+    display: none !important;
+  }
+  .product-card-title {
+    font-size: 0.85rem !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+    height: 2.1rem !important;
+  }
+  .product-card-price {
+    font-size: 0.95rem !important;
+    margin-top: 0.15rem !important;
+  }
+
+  /* ── Touch Ergonomics ── */
+  .size-color-btn {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+  }
+
+  /* ── Catalog Filter Controls ── */
+  .catalog-filters-wrap {
+    gap: 0.65rem !important;
+  }
+  .catalog-search-input,
+  .catalog-category-select {
+    height: 48px !important;
+    min-height: 48px !important;
+    font-size: 0.95rem !important;
+    background: var(--color-bg-secondary) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    color: var(--color-text-primary) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+  .catalog-search-input {
+    padding: 0 1rem 0 2.75rem !important;
+  }
+  .catalog-category-select {
+    padding: 0 2.25rem 0 1rem !important;
+  }
+
+  /* ── Product Detail ── */
+  .product-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .product-main-image {
+    height: 280px !important;
+  }
+  .product-thumbnail-btn {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .size-color-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+  .add-to-cart-btn {
+    height: 3.25rem !important;
+    font-size: 1rem !important;
+  }
+
+  /* ── Cart page ── */
+  .cart-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .cart-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+  .cart-item-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  /* ── Checkout page ── */
+  .checkout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .checkout-actions {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  .checkout-actions a,
+  .checkout-actions button {
+    width: 100% !important;
+  }
+  .checkout-actions a .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* ── Auth pages ── */
+  .auth-card {
+    padding: 2rem 1.5rem !important;
+  }
+  .auth-card h2 {
+    font-size: 1.5rem !important;
+  }
+  .auth-submit-btn {
+    height: 3.25rem !important;
+    font-size: 1rem !important;
+  }
+  .register-name-row {
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+
+  /* ── Mobile Bottom Nav ── */
+  .mobile-bottom-nav {
+    display: flex !important;
+  }
+
+  /* Add extra bottom padding to main layout so fixed bottom nav doesn't cover content */
+  .store-main {
+    padding-bottom: 5rem !important;
+  }
+
+  /* ── Mobile Admin Overrides ── */
+  .admin-container {
+    flex-direction: column !important;
+    min-height: 100vh !important;
+  }
+
+  .admin-sidebar {
+    display: none !important;
+  }
+
+  .admin-mobile-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.75rem 1rem !important;
+    background: var(--color-bg-secondary) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+  }
+
+  .admin-mobile-pills {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    padding: 0.6rem 1rem !important;
+    background: #09090e !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    position: sticky !important;
+    top: 53px !important;
+    z-index: 99 !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .admin-mobile-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-pill-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    padding: 0.45rem 0.85rem !important;
+    border-radius: 9999px !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    color: var(--color-text-secondary) !important;
+    background: var(--color-bg-tertiary) !important;
+    border: 1px solid var(--color-border) !important;
+    text-decoration: none !important;
+    flex-shrink: 0 !important;
+  }
+
+  .admin-pill-item.active {
+    color: white !important;
+    background: var(--color-accent-gradient) !important;
+    border-color: var(--color-accent) !important;
+    box-shadow: 0 2px 8px rgba(214, 48, 49, 0.3) !important;
+  }
+
+  .admin-main {
+    padding: 1.25rem 1rem !important;
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN PANEL BASE STYLES (DESKTOP)
+   ═══════════════════════════════════════════════════════════ */
+.admin-container {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+}
+
+.admin-sidebar {
+  width: 260px;
+  background: var(--color-bg-secondary);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.admin-mobile-header {
+  display: none;
+}
+
+.admin-mobile-pills {
+  display: none;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 2rem 3rem;
+  overflow-y: auto;
+  height: 100vh;
+}
+
 

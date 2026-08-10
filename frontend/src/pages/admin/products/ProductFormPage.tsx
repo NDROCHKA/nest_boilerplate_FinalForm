@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Check, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, Plus, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
 import { productAdminApi } from '../../../api/product-admin.api';
 import { categoryAdminApi } from '../../../api/category-admin.api';
+import { fileApi } from '../../../api/file.api';
 import { Category } from '../../../types/category.types';
 import { useToast } from '../../../context/ToastContext';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Button } from '../../../components/ui/Button';
+import { resolveImageUrl } from '../../../utils/imageUrl';
 
 export const ProductFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +34,30 @@ export const ProductFormPage: React.FC = () => {
   const [sizesStr, setSizesStr] = useState('S, M, L, XL');
   const [colorsStr, setColorsStr] = useState('White, Black');
   const [imageUrls, setImageUrls] = useState<string[]>(['']);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      const uploaded = await fileApi.uploadSingle(files[0]);
+      setImageUrls((prev) => {
+        const filtered = prev.filter((u) => u.trim() !== '');
+        return [...filtered, uploaded.url];
+      });
+      showToast('Photo uploaded successfully', 'success');
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || 'Failed to upload photo', 'error');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
 
   // Load categories
   useEffect(() => {
@@ -314,18 +338,76 @@ export const ProductFormPage: React.FC = () => {
             {/* Images */}
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ margin: 0 }}>Product Images</h3>
-                <Button variant="secondary" onClick={addImageUrlField} disabled={isSubmitting} style={{ padding: '0.25rem 0.5rem' }}>
-                  <Plus size={16} />
-                </Button>
+                <h3 style={{ margin: 0 }}>Product Photos</h3>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <label
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.375rem 0.75rem',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'var(--color-accent)',
+                      color: 'white',
+                      cursor: isUploading || isSubmitting ? 'not-allowed' : 'pointer',
+                      opacity: isUploading || isSubmitting ? 0.6 : 1,
+                    }}
+                  >
+                    <Upload size={16} />
+                    {isUploading ? 'Uploading...' : 'Upload File'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      disabled={isUploading || isSubmitting}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <Button variant="secondary" onClick={addImageUrlField} disabled={isSubmitting} style={{ padding: '0.375rem 0.75rem' }}>
+                    <Plus size={16} /> URL
+                  </Button>
+                </div>
               </div>
               <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)' }} />
+
+              {/* Previews gallery */}
+              {imageUrls.some((u) => u.trim() !== '') && (
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  {imageUrls
+                    .filter((u) => u.trim() !== '')
+                    .map((url, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          position: 'relative',
+                          width: '80px',
+                          height: '80px',
+                          borderRadius: 'var(--radius-sm)',
+                          overflow: 'hidden',
+                          border: '1px solid var(--color-border)',
+                          background: 'var(--color-bg-tertiary)',
+                        }}
+                      >
+                        <img
+                          src={resolveImageUrl(url)}
+                          alt={`Product photo ${idx + 1}`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    ))}
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {imageUrls.map((url, index) => (
                   <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <Input
-                      placeholder="https://example.com/product-image.jpg"
+                      placeholder="https://example.com/product-image.jpg or uploaded URL"
                       value={url}
                       onChange={(e) => handleImageUrlChange(index, e.target.value)}
                       disabled={isSubmitting}

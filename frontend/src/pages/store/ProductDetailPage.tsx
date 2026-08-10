@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ShoppingBag, ChevronLeft, ShieldAlert, Award, Star, Truck } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ShieldAlert, Award, Star, Truck, Ruler } from 'lucide-react';
 import { productApi } from '../../api/product.api';
 import { Product } from '../../types/product.types';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
+import { resolveImageUrl } from '../../utils/imageUrl';
+import { SizeGuideModal } from '../../components/modals/SizeGuideModal';
+import { detectFitCategory } from '../../utils/sizeCharts';
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +24,7 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -123,6 +127,7 @@ export const ProductDetailPage: React.FC = () => {
 
       {/* Detail grid */}
       <div
+        className="product-detail-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
@@ -134,6 +139,7 @@ export const ProductDetailPage: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {/* Main preview */}
           <div
+            className="product-main-image"
             style={{
               width: '100%',
               height: '420px',
@@ -148,7 +154,7 @@ export const ProductDetailPage: React.FC = () => {
           >
             {selectedImage ? (
               <img
-                src={selectedImage}
+                src={resolveImageUrl(selectedImage)}
                 alt={product.name}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
@@ -164,6 +170,7 @@ export const ProductDetailPage: React.FC = () => {
                 <button
                   key={img.id}
                   onClick={() => setSelectedImage(img.url)}
+                  className="product-thumbnail-btn"
                   style={{
                     width: '70px',
                     height: '70px',
@@ -176,7 +183,7 @@ export const ProductDetailPage: React.FC = () => {
                     background: 'var(--color-bg-tertiary)',
                   }}
                 >
-                  <img src={img.url} alt="thumbnail" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={resolveImageUrl(img.url)} alt="thumbnail" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </button>
               ))}
             </div>
@@ -231,13 +238,35 @@ export const ProductDetailPage: React.FC = () => {
             {/* Sizes */}
             {product.sizes && product.sizes.length > 0 && (
               <div>
-                <label style={{ marginBottom: '0.5rem' }}>Select Size</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label style={{ margin: 0 }}>Select Size</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeGuideOpen(true)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--color-accent)',
+                      fontSize: '0.8125rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      textDecoration: 'underline',
+                      padding: 0,
+                    }}
+                  >
+                    <Ruler size={15} />
+                    <span>Size Guide</span>
+                  </button>
+                </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {product.sizes.map((sz) => (
                     <button
                       key={sz}
                       onClick={() => setSelectedSize(sz)}
-                      className="btn"
+                      className="btn size-color-btn"
                       style={{
                         padding: '0.5rem 1rem',
                         borderRadius: '6px',
@@ -263,7 +292,7 @@ export const ProductDetailPage: React.FC = () => {
                     <button
                       key={clr}
                       onClick={() => setSelectedColor(clr)}
-                      className="btn"
+                      className="btn size-color-btn"
                       style={{
                         padding: '0.5rem 1rem',
                         borderRadius: '6px',
@@ -324,6 +353,7 @@ export const ProductDetailPage: React.FC = () => {
           {product.stock > 0 ? (
             <Button
               variant="primary"
+              className="add-to-cart-btn"
               onClick={handleAddToCart}
               style={{ height: '3rem', width: '100%', gap: '0.5rem', fontSize: '1rem' }}
             >
@@ -340,7 +370,7 @@ export const ProductDetailPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
               <Truck size={16} style={{ color: 'var(--color-accent)' }} />
-              <span>Cash on delivery available. Free delivery on orders above $100.</span>
+              <span>Cash on delivery available. Free delivery on all Lebanon orders.</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
               <Award size={16} style={{ color: 'var(--color-success)' }} />
@@ -349,6 +379,13 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Size Guide Modal */}
+      <SizeGuideModal
+        isOpen={isSizeGuideOpen}
+        onClose={() => setIsSizeGuideOpen(false)}
+        initialCategory={detectFitCategory(product?.categoryName || product?.name)}
+      />
     </div>
   );
 };

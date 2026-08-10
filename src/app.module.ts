@@ -14,6 +14,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { MailModule } from './mail/mail.module';
+import { FileModule } from './file/file.module';
+import { CategorySeedModule } from './database/seeds/relational/category/category-seed.module';
+import { ProductSeedModule } from './database/seeds/relational/product/product-seed.module';
+
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
   dataSourceFactory: async (options: DataSourceOptions) => {
@@ -33,9 +37,12 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     UserModule,
     AuthModule,
     MailModule,
+    FileModule,
     CategoryModule,
     ProductModule,
     OrderModule,
+    CategorySeedModule,
+    ProductSeedModule,
   ],
   controllers: [],
   providers: [],

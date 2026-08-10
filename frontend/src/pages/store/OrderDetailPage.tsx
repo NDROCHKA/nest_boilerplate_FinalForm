@@ -108,6 +108,42 @@ export const OrderDetailPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Status Notice Banner */}
+      <div
+        className="glass-card"
+        style={{
+          padding: '1.25rem 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          border: order.status === 'confirmed' || order.status === 'shipped' ? '1px solid var(--color-info)' : '1px solid var(--color-border)',
+          background: order.status === 'confirmed' || order.status === 'shipped' ? 'var(--color-info-bg)' : 'var(--color-bg-secondary)',
+          borderRadius: 'var(--radius-md)',
+        }}
+      >
+        <Truck size={24} style={{ color: order.status === 'confirmed' || order.status === 'shipped' ? 'var(--color-info)' : 'var(--color-text-secondary)', flexShrink: 0 }} />
+        <div>
+          <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>
+            {order.status === 'confirmed' || order.status === 'shipped'
+              ? 'Order Confirmed & Out for Delivery'
+              : order.status === 'delivered'
+              ? 'Order Delivered'
+              : order.status === 'cancelled'
+              ? 'Order Cancelled'
+              : 'Order Pending Confirmation'}
+          </h4>
+          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+            {order.status === 'confirmed' || order.status === 'shipped'
+              ? 'Your order has been confirmed! Your items are currently being shipped and delivered to your address (4-7 days).'
+              : order.status === 'delivered'
+              ? 'Your package has been successfully delivered. Enjoy your Crusader gear!'
+              : order.status === 'cancelled'
+              ? 'This order has been cancelled.'
+              : 'Our team is reviewing your order. Cash payment will be collected upon delivery (4-7 days).'}
+          </p>
+        </div>
+      </div>
+
       {/* Delivery Grid */}
       <div
         style={{
@@ -203,16 +239,15 @@ export const OrderDetailPage: React.FC = () => {
               <span style={{ color: 'var(--color-text-secondary)' }}>Subtotal</span>
               <span>${order.totalAmount.toFixed(2)}</span>
             </div>
-            {/* The shipping charges can be inferred. For COD: subtotal is totalAmount, COD delivery charges are snapped. */}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Shipping</span>
-              <span>{order.totalAmount >= 100 ? 'Free' : '$9.99'}</span>
+              <span style={{ color: 'var(--color-text-secondary)' }}>Lebanon Delivery</span>
+              <span>$4.00</span>
             </div>
             <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.125rem' }}>
               <span>Grand Total</span>
               <span style={{ color: 'var(--color-accent)' }}>
-                ${(order.totalAmount + (order.totalAmount >= 100 ? 0 : 9.99)).toFixed(2)}
+                ${(order.totalAmount + 4).toFixed(2)}
               </span>
             </div>
           </div>

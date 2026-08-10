@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import * as bodyParser from 'body-parser';
+import * as express from 'express';
+import { join } from 'path';
 import { useContainer } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from './config/config.type';
@@ -21,12 +23,16 @@ import {
 } from './swagger-ui/swagger.config';
 import { UserService } from './user/user.service';
 import { RoleEnum } from './utils/enums/roles.enum';
+import { CategorySeedService } from './database/seeds/relational/category/category-seed.service';
+import { ProductSeedService } from './database/seeds/relational/product/product-seed.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService<AllConfigType>);
+
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   app.setGlobalPrefix(
     configService.getOrThrow('app.apiPrefix', { infer: true }),
@@ -72,7 +78,7 @@ async function bootstrap() {
 
   // Idempotently seed default users on startup
   const userService = app.get(UserService);
-  
+
   const superAdminEmail = 'cbksuperadmin@gmail.com';
   const existingSuperAdmin = await userService.findOneByEmail({ email: superAdminEmail });
   if (!existingSuperAdmin) {
@@ -107,6 +113,20 @@ async function bootstrap() {
     console.log('Seeded default user on startup: cbk@gmail.com');
   }
 
-  await app.listen(configService.getOrThrow('app.port', { infer: true }));
+  // Idempotently seed categories and products with images on startup
+  try {
+    const categorySeedService = app.get(CategorySeedService);
+    const productSeedService = app.get(ProductSeedService);
+    await categorySeedService.run();
+    await productSeedService.run();
+    console.log('Categories and Products with photos seeded successfully on startup.');
+  } catch (seedErr) {
+    console.error('Seed execution on startup error:', seedErr);
+  }
+
+  await app.listen(
+    configService.getOrThrow('app.port', { infer: true }),
+    '0.0.0.0',
+  );
 }
 bootstrap();

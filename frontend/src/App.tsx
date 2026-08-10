@@ -22,6 +22,9 @@ import { CartPage } from './pages/store/CartPage';
 import { CheckoutPage } from './pages/store/CheckoutPage';
 import { MyOrdersPage } from './pages/store/MyOrdersPage';
 import { OrderDetailPage as StoreOrderDetailPage } from './pages/store/OrderDetailPage';
+import { AboutPage } from './pages/store/AboutPage';
+import { FaqPage } from './pages/store/FaqPage';
+import { SizeGuidePage } from './pages/store/SizeGuidePage';
 
 // Pages - Admin
 import { DashboardPage } from './pages/admin/DashboardPage';
@@ -52,6 +55,9 @@ export const App: React.FC = () => {
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="products/:id" element={<ProductDetailPage />} />
                 <Route path="cart" element={<CartPage />} />
+                <Route path="about" element={<AboutPage />} />
+                <Route path="faq" element={<FaqPage />} />
+                <Route path="size-guide" element={<SizeGuidePage />} />
                 
                 {/* Protected Customer Routes */}
                 <Route element={<ProtectedRoute />}>

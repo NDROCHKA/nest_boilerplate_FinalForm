@@ -70,9 +70,7 @@ export const OrderDetailPage: React.FC = () => {
       case OrderStatusEnum.pending:
         return [OrderStatusEnum.confirmed, OrderStatusEnum.cancelled];
       case OrderStatusEnum.confirmed:
-        return [OrderStatusEnum.shipped, OrderStatusEnum.cancelled];
-      case OrderStatusEnum.shipped:
-        return [OrderStatusEnum.delivered];
+        return [OrderStatusEnum.delivered, OrderStatusEnum.cancelled];
       default:
         return [];
     }
@@ -284,14 +282,14 @@ export const OrderDetailPage: React.FC = () => {
               <span>${order.totalAmount.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Shipping</span>
-              <span>{order.totalAmount >= 100 ? 'Free' : '$9.99'}</span>
+              <span style={{ color: 'var(--color-text-secondary)' }}>Lebanon Shipping</span>
+              <span>$4.00</span>
             </div>
             <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.125rem' }}>
               <span>Grand Total</span>
               <span style={{ color: 'var(--color-accent)' }}>
-                ${(order.totalAmount + (order.totalAmount >= 100 ? 0 : 9.99)).toFixed(2)}
+                ${(order.totalAmount + 4).toFixed(2)}
               </span>
             </div>
           </div>

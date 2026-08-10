@@ -13,6 +13,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 
+import { CrusaderLogo } from '../brand/CrusaderLogo';
+
 export const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -31,20 +33,9 @@ export const AdminLayout: React.FC = () => {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-primary)' }}>
-      {/* Sidebar */}
-      <aside
-        style={{
-          width: '260px',
-          background: 'var(--color-bg-secondary)',
-          borderRight: '1px solid var(--color-border)',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-        }}
-      >
+    <div className="admin-container">
+      {/* Desktop Sidebar (Hidden on Mobile) */}
+      <aside className="admin-sidebar">
         {/* Admin Header Title */}
         <div
           style={{
@@ -55,19 +46,7 @@ export const AdminLayout: React.FC = () => {
             gap: '0.75rem',
           }}
         >
-          <div
-            style={{
-              background: 'var(--color-accent-gradient)',
-              padding: '0.4rem',
-              borderRadius: '8px',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Shield size={20} />
-          </div>
+          <CrusaderLogo size={32} variant="image" />
           <div>
             <h4 style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>Crusaders</h4>
             <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)' }}>Admin Panel</span>
@@ -159,9 +138,64 @@ export const AdminLayout: React.FC = () => {
         </div>
       </aside>
 
+      {/* Mobile Top Header (Shown only on mobile screens <= 768px) */}
+      <header className="admin-mobile-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div
+            style={{
+              background: 'var(--color-accent-gradient)',
+              padding: '0.35rem',
+              borderRadius: '6px',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Shield size={18} />
+          </div>
+          <div>
+            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, lineHeight: 1 }}>Crusaders</h4>
+            <span style={{ fontSize: '0.6875rem', color: 'var(--color-accent)', fontWeight: 600 }}>Admin Panel</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Link to="/">
+            <Button variant="secondary" style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', gap: '0.25rem' }}>
+              <Home size={14} />
+              Store
+            </Button>
+          </Link>
+          <Button
+            variant="text"
+            onClick={handleLogout}
+            style={{ padding: '0.35rem', minWidth: 0 }}
+            title="Logout"
+          >
+            <LogOut size={16} />
+          </Button>
+        </div>
+      </header>
+
+      {/* Mobile Horizontal Pill Navigation Bar (Shown only on mobile screens <= 768px) */}
+      <div className="admin-mobile-pills">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) => `admin-pill-item ${isActive ? 'active' : ''}`}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+      </div>
+
       {/* Main Content Pane */}
-      <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', height: '100vh' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <main className="admin-main">
+        <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
           <Outlet />
         </div>
       </main>

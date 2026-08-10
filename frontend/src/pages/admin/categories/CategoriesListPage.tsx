@@ -6,6 +6,7 @@ import { Category } from '../../../types/category.types';
 import { usePagination } from '../../../hooks/usePagination';
 import { useToast } from '../../../context/ToastContext';
 import { Button } from '../../../components/ui/Button';
+import { resolveImageUrl } from '../../../utils/imageUrl';
 import { Table, Column } from '../../../components/ui/Table';
 import { Pagination } from '../../../components/ui/Pagination';
 
@@ -68,7 +69,7 @@ export const CategoriesListPage: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {item.imageUrl ? (
             <img
-              src={item.imageUrl}
+              src={resolveImageUrl(item.imageUrl)}
               alt={item.name}
               style={{ width: '32px', height: '32px', borderRadius: '4px', objectFit: 'cover' }}
             />
