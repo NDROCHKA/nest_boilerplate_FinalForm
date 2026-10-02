@@ -14,16 +14,16 @@ interface ResponseFormat<T> {
 
 @Injectable()
 export class ResponseTransformInterceptor<T>
-  implements NestInterceptor<T, ResponseFormat<T>>
+  implements NestInterceptor<T, ResponseFormat<T> | Record<string, unknown>>
 {
   intercept(
     context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<ResponseFormat<T>> {
+    next: CallHandler<T>,
+  ): Observable<ResponseFormat<T> | Record<string, unknown>> {
     // The `next.handle()` method returns an Observable stream that represents the response data.
     // Observables are used for asynchronous handling of events or data streams in a reactive way.
     return next.handle().pipe(
-      map((data) => {
+      map((data: T) => {
         // check if data is an object and already has a data property
         if (data && typeof data === 'object' && 'data' in data) {
           // add the status'property without rewrapping

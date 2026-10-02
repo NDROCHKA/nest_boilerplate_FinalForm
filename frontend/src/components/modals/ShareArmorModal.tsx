@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { X, Download, Share2, Copy, Check, Sparkles } from 'lucide-react';
 import { getDailyPsalm } from '../../utils/psalms';
 import { useToast } from '../../context/ToastContext';
@@ -12,7 +12,6 @@ interface ShareArmorModalProps {
 export const ShareArmorModal: React.FC<ShareArmorModalProps> = ({ isOpen, onClose }) => {
   const dailyPsalm = getDailyPsalm();
   const { showToast } = useToast();
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -37,7 +36,7 @@ export const ShareArmorModal: React.FC<ShareArmorModalProps> = ({ isOpen, onClos
           text: fullShareMessage,
           url: window.location.origin,
         });
-      } catch (err) {
+      } catch {
         // User cancelled share
       }
     } else {

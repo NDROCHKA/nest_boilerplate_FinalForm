@@ -34,8 +34,8 @@ import { UserNotFoundException } from './exceptions/user.exceptions';
 import { TransactionQueryRunner } from '../utils/decorators/transaction-query-runner.decorator';
 import { QueryRunnerInterceptor } from '../utils/interceptors/query-runner.interceptor';
 import type { QueryRunner } from 'typeorm';
+import { GetUser } from '../utils/decorators/getUser.decorator';
 
-@UseInterceptors(QueryRunnerInterceptor)
 @ApiTags('User Admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -81,6 +81,7 @@ export class UserAdminController {
   }
 
   @Patch(':id')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.OK)
   @ApiUpdateUserById()
   async update(
@@ -92,27 +93,32 @@ export class UserAdminController {
   }
 
   @Patch(':id/role')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.OK)
   @ApiUpdateUserRole()
   async updateRole(
+    @GetUser() actorUserId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserRoleDto: UpdateUserRoleDto,
     @TransactionQueryRunner() queryRunner: QueryRunner,
   ): Promise<User> {
     return this.userService.updateRole({
       id,
+      actorUserId,
       role: updateUserRoleDto.role,
       queryRunner,
     });
   }
 
   @Delete(':id')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiDeleteUserById()
   async remove(
+    @GetUser() actorUserId: number,
     @Param('id', ParseIntPipe) id: number,
     @TransactionQueryRunner() queryRunner: QueryRunner,
   ): Promise<void> {
-    await this.userService.softDelete({ id, queryRunner });
+    await this.userService.softDelete({ id, actorUserId, queryRunner });
   }
 }

@@ -1,5 +1,6 @@
 import {
   AfterLoad,
+  Check,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -12,11 +13,13 @@ import { Exclude } from 'class-transformer';
 import { RoleEnum } from '../../utils/enums/roles.enum';
 
 @Entity({ name: 'user' })
+@Check('CHK_user_role', '"role" IN (1, 2)')
+@Index('UQ_user_email', ['email'], { unique: true })
 export class UserEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ primaryKeyConstraintName: 'PK_user' })
   id: number;
 
-  @Column({ type: 'varchar', length: 320, unique: true, nullable: true })
+  @Column({ type: 'varchar', length: 320, nullable: true })
   email: string | null;
 
   @Column({ type: 'varchar', length: 32, nullable: true })
@@ -34,11 +37,11 @@ export class UserEntity {
     this.previousPassword = this.password;
   }
 
-  @Index()
+  @Index('IDX_user_first_name')
   @Column({ type: 'varchar', length: 120, nullable: true })
   firstName: string | null;
 
-  @Index()
+  @Index('IDX_user_last_name')
   @Column({ type: 'varchar', length: 120, nullable: true })
   lastName: string | null;
 
@@ -57,7 +60,7 @@ export class UserEntity {
   @UpdateDateColumn({ type: 'timestamp with time zone' })
   updatedAt: Date;
 
-  @Index({ where: '"deletedAt" IS NULL' })
+  @Index('IDX_user_active', { where: '"deletedAt" IS NULL' })
   @DeleteDateColumn({ type: 'timestamp with time zone' })
   deletedAt: Date | null;
 }

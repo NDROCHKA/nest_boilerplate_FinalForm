@@ -6,13 +6,15 @@ export function ApiResendOtp() {
     ApiOperation({ summary: 'Resend OTP verification email' }),
     ApiResponse({
       status: 200,
-      description: 'If the email is registered and unverified, a new code was sent.',
+      description:
+        'If the email is registered and unverified, a new code was sent.',
       schema: {
         type: 'object',
         properties: {
           message: {
             type: 'string',
-            example: 'If your email is registered and unverified, a new verification code has been sent.',
+            example:
+              'If your email is registered and unverified, a new verification code has been sent.',
           },
         },
       },

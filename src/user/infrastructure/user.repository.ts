@@ -5,12 +5,7 @@ import { DeepPartial, QueryRunner, Repository } from 'typeorm';
 import { User } from '../domain/user';
 import { UserEntity } from './user.entity';
 import { NullableType } from '../../utils/types/nullable.type';
-import {
-  FilterUserDto,
-  QueryUserDto,
-  SortUserDto,
-} from '../dto/query-user.dto';
-import { IPaginationOptions } from '../../utils/types/pagination-options';
+import { QueryUserDto } from '../dto/query-user.dto';
 import { EntityCondition } from '../../utils/types/entity-condition.type';
 import { UserMapper } from './user.mapper';
 import { RelationsAndSelectsOptions } from '../../utils/types/relations-and-selects-options';
@@ -41,7 +36,7 @@ export class UserRepository {
   ): Promise<User> {
     const repository = this.getRepository(queryRunner);
 
-    const entity = repository.create(UserMapper.toPersistence(data as User));
+    const entity = repository.create(UserMapper.toPersistence(data));
     const saved = await repository.save(entity);
     return UserMapper.toDomain(saved);
   }
@@ -74,11 +69,8 @@ export class UserRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('user');
 
-    // Apply dynamic selects and joins (MUST await!)
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    // Apply dynamic selects and joins.
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     // Apply filters
     if (query.filters?.name) {
@@ -102,7 +94,7 @@ export class UserRepository {
         if (sort?.orderBy) {
           queryBuilder.addOrderBy(
             `user.${String(sort.orderBy)}`,
-            (sort.order ?? 'ASC').toUpperCase() as 'ASC' | 'DESC',
+            sort.order ?? 'ASC',
           );
         }
       });
@@ -136,11 +128,8 @@ export class UserRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('user');
 
-    // Apply dynamic selects and joins (MUST await!)
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    // Apply dynamic selects and joins.
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     // Apply field filters
     if (fields.id) {
@@ -201,6 +190,6 @@ export class UserRepository {
     queryRunner?: QueryRunner;
   }): Promise<void> {
     const repository = this.getRepository(queryRunner);
-    await repository.softDelete(id as number);
+    await repository.softDelete(id);
   }
 }

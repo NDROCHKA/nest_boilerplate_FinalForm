@@ -3,11 +3,11 @@ import { RelationsAndSelectsOptions } from '../types/relations-and-selects-optio
 // import { RelationsAndSelectsOptions } from '../types/relations-and-selects-options';
 
 // this function will take a config and applies it to the queryBuilder
-export async function addRelationsAndSelects<T extends ObjectLiteral>(
+export function addRelationsAndSelects<T extends ObjectLiteral>(
   queryBuilder: SelectQueryBuilder<T>,
 
   config: Partial<RelationsAndSelectsOptions>,
-): Promise<SelectQueryBuilder<T>> {
+): SelectQueryBuilder<T> {
   if (config.select && config.select.length > 0) {
     queryBuilder.select(config.select);
   }

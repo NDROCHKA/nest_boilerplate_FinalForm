@@ -8,6 +8,7 @@ export class OrderMapper {
     const order = new Order();
     order.id = entity.id;
     order.userId = entity.userId;
+    order.clientOrderId = entity.clientOrderId;
     order.totalAmount = Number(entity.totalAmount);
     order.status = entity.status;
     order.shippingAddress = entity.shippingAddress;
@@ -17,9 +18,7 @@ export class OrderMapper {
     order.updatedAt = entity.updatedAt;
 
     if (entity.items) {
-      order.items = entity.items.map((item) =>
-        OrderMapper.itemToDomain(item),
-      );
+      order.items = entity.items.map((item) => OrderMapper.itemToDomain(item));
     }
 
     return order;

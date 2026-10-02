@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Check, Plus, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Check, Plus, Trash2, Upload } from 'lucide-react';
 import { productAdminApi } from '../../../api/product-admin.api';
 import { categoryAdminApi } from '../../../api/category-admin.api';
 import { fileApi } from '../../../api/file.api';
@@ -112,7 +112,7 @@ export const ProductFormPage: React.FC = () => {
     };
 
     loadProduct();
-  }, [id]);
+  }, [id, isEdit, navigate, showToast]);
 
   const validate = () => {
     const tempErrors: typeof errors = {};

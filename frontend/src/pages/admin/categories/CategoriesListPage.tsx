@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, FolderTree } from 'lucide-react';
 import { categoryAdminApi } from '../../../api/category-admin.api';
@@ -18,7 +18,6 @@ export const CategoriesListPage: React.FC = () => {
   const {
     page,
     limit,
-    totalCount,
     totalPages,
     hasNextPage,
     hasPrevPage,
@@ -28,7 +27,7 @@ export const CategoriesListPage: React.FC = () => {
     setTotalCount,
   } = usePagination(10);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await categoryAdminApi.getAll({ page, limit });
@@ -40,11 +39,11 @@ export const CategoriesListPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [limit, page, setTotalCount, showToast]);
 
   useEffect(() => {
     fetchCategories();
-  }, [page, limit]);
+  }, [fetchCategories]);
 
   const handleDelete = async (id: number, name: string) => {
     if (!window.confirm(`Are you sure you want to delete category "${name}"?`)) return;

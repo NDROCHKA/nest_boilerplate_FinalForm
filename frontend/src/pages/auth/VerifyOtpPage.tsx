@@ -4,7 +4,7 @@ import { authApi } from '../../api/auth.api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Button } from '../../components/ui/Button';
-import { Shield, KeyRound, Mail, ArrowRight, ArrowLeft, X } from 'lucide-react';
+import { Mail, ArrowRight, ArrowLeft, X } from 'lucide-react';
 import { CrusaderLogo } from '../../components/brand/CrusaderLogo';
 
 export const VerifyOtpPage: React.FC = () => {

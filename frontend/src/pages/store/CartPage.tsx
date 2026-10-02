@@ -4,6 +4,7 @@ import { ShoppingBag, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { ORDER_SHIPPING_FEE } from '../../utils/constants';
 
 export const CartPage: React.FC = () => {
   const { items, updateQuantity, removeItem, totalAmount } = useCart();
@@ -28,8 +29,9 @@ export const CartPage: React.FC = () => {
     );
   }
 
-  const shipping = 0;
-  const orderTotal = parseFloat((totalAmount + shipping).toFixed(2));
+  const orderTotal = parseFloat(
+    (totalAmount + ORDER_SHIPPING_FEE).toFixed(2),
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }} className="animate-fade-in">
@@ -149,8 +151,8 @@ export const CartPage: React.FC = () => {
               <span>${totalAmount.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--color-text-secondary)' }}>Shipping</span>
-              <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>Free</span>
+              <span style={{ color: 'var(--color-text-secondary)' }}>Lebanon Shipping</span>
+              <span>${ORDER_SHIPPING_FEE.toFixed(2)}</span>
             </div>
           </div>
 

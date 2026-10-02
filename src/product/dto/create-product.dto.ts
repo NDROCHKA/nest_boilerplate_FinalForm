@@ -2,10 +2,13 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  ArrayMaxSize,
+  MaxLength,
   Max,
   Min,
 } from 'class-validator';
@@ -15,6 +18,7 @@ export class CreateProductDto {
   @ApiProperty({ example: 'Classic White T-Shirt' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255)
   name: string;
 
   @ApiPropertyOptional({
@@ -22,6 +26,7 @@ export class CreateProductDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(10000)
   description?: string;
 
   @ApiProperty({ example: 29.99 })
@@ -46,6 +51,7 @@ export class CreateProductDto {
     description: 'Available sizes — defined by the Super Admin',
   })
   @IsArray()
+  @ArrayMaxSize(100)
   @IsString({ each: true })
   sizes: string[];
 
@@ -54,18 +60,20 @@ export class CreateProductDto {
     description: 'Available colors',
   })
   @IsArray()
+  @ArrayMaxSize(100)
   @IsString({ each: true })
   colors: string[];
 
   @ApiProperty({ example: 150, description: 'Stock quantity' })
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(0)
   stock: number;
 
   @ApiProperty({ example: 1, description: 'Category ID' })
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   categoryId: number;
 
   @ApiPropertyOptional({
@@ -74,10 +82,14 @@ export class CreateProductDto {
   })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20)
   @IsString({ each: true })
   imageUrls?: string[];
 
-  @ApiPropertyOptional({ example: true, description: 'Whether product is visible in the store' })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Whether product is visible in the store',
+  })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;

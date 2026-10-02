@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
@@ -9,14 +10,13 @@ import appConfig from './config/app.config';
 import authConfig from './config/auth/auth.config';
 import mailConfig from './config/mail/mail.config';
 import databaseConfig from './database/config/database.config';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { MailModule } from './mail/mail.module';
 import { FileModule } from './file/file.module';
-import { CategorySeedModule } from './database/seeds/relational/category/category-seed.module';
-import { ProductSeedModule } from './database/seeds/relational/product/product-seed.module';
+import { HealthController } from './health/health.controller';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -26,13 +26,17 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
 });
 @Module({
   imports: [
-    EventEmitterModule.forRoot(),
-
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, authConfig, appConfig, mailConfig],
       envFilePath: ['.env'],
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000,
+        limit: 120,
+      },
+    ]),
     infrastructureDatabaseModule,
     UserModule,
     AuthModule,
@@ -41,11 +45,14 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     CategoryModule,
     ProductModule,
     OrderModule,
-    CategorySeedModule,
-    ProductSeedModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [HealthController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
   exports: [],
 })
 export class AppModule {}

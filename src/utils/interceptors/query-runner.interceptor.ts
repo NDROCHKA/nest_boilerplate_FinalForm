@@ -9,9 +9,11 @@ import { DataSource, QueryRunner } from 'typeorm';
 import { from, lastValueFrom, Observable } from 'rxjs';
 import { Request } from 'express';
 import { safeRelease } from '../queryRunner/querry-runner-release-mechanism';
+import { AfterCommitCallback } from '../decorators/transaction-after-commit.decorator';
 
 interface RequestWithQueryRunner extends Request {
   queryRunner?: QueryRunner;
+  afterCommitCallbacks?: AfterCommitCallback[];
 }
 
 @Injectable()
@@ -20,13 +22,16 @@ export class QueryRunnerInterceptor implements NestInterceptor {
 
   constructor(private readonly dataSource: DataSource) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<unknown>,
+  ): Observable<unknown> {
     return from(this.handleRequest(context, next));
   }
 
   private async handleRequest(
     context: ExecutionContext,
-    next: CallHandler,
+    next: CallHandler<unknown>,
   ): Promise<unknown> {
     const httpContext = context.switchToHttp();
     const request = httpContext.getRequest<RequestWithQueryRunner>();
@@ -45,25 +50,47 @@ export class QueryRunnerInterceptor implements NestInterceptor {
 
     const queryRunner = this.dataSource.createQueryRunner();
     request.queryRunner = queryRunner;
+    request.afterCommitCallbacks = [];
     this.logger.debug(`${requestLabel} - Created QueryRunner instance`);
 
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    this.logger.debug(`${requestLabel} - Transaction started`);
-
     try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      this.logger.debug(`${requestLabel} - Transaction started`);
+
       const result = await lastValueFrom(next.handle());
       await queryRunner.commitTransaction();
       this.logger.debug(`${requestLabel} - Transaction committed`);
+      this.runAfterCommitCallbacks(request, requestLabel);
       return result;
     } catch (error) {
-      this.logger.error(`${requestLabel} - Error encountered`, error as Error);
+      this.logger.error(
+        `${requestLabel} - Error encountered`,
+        error instanceof Error ? error.stack : String(error),
+      );
       await this.safeRollback(queryRunner, requestLabel);
       throw error;
     } finally {
       await safeRelease(queryRunner);
       this.logger.debug(`${requestLabel} - QueryRunner released`);
       request.queryRunner = undefined;
+      request.afterCommitCallbacks = undefined;
+    }
+  }
+
+  private runAfterCommitCallbacks(
+    request: RequestWithQueryRunner,
+    requestLabel: string,
+  ): void {
+    for (const callback of request.afterCommitCallbacks ?? []) {
+      void Promise.resolve()
+        .then(callback)
+        .catch((error: unknown) => {
+          this.logger.error(
+            `${requestLabel} - Post-commit callback failed`,
+            error instanceof Error ? error.stack : String(error),
+          );
+        });
     }
   }
 

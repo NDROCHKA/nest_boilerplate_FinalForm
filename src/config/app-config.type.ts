@@ -5,6 +5,8 @@ export type AppConfig = {
   adminDomain?: string;
   frontendDomain?: string;
   backendDomain: string;
+  uploadsDirectory: string;
+  trustProxyHops: number;
   port: number;
   apiPrefix: string;
   fallbackLanguage: string;

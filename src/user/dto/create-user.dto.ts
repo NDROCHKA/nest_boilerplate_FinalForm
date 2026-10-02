@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -24,21 +25,26 @@ export class CreateUserDto {
 
   @ApiProperty({ example: '+11234567890' })
   @IsNotEmpty()
+  @IsString()
+  @MaxLength(32)
   phoneNumber: string;
 
-  @ApiProperty({ minLength: 3 })
-  @MinLength(3)
+  @ApiProperty({ minLength: 8, maxLength: 72 })
+  @MinLength(8)
+  @MaxLength(72)
   @IsString()
   password: string;
 
   @ApiProperty({ example: 'Jane' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
   firstName: string;
 
   @ApiProperty({ example: 'Doe' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
   lastName: string;
 
   @ApiPropertyOptional({
@@ -46,6 +52,7 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(2048)
   profilePicture?: string | null;
 
   // Role is always forced to `user` on public registration.

@@ -1,12 +1,6 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { AuthService } from './auth.service';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
@@ -20,39 +14,34 @@ import { ApiRefreshToken } from './swagger/refresh-token.swagger';
 import { ApiRegister } from './swagger/register.swagger';
 import { ApiVerifyOtp } from './swagger/verify-otp.swagger';
 import { ApiResendOtp } from './swagger/resend-otp.swagger';
-import { QueryRunnerInterceptor } from '../utils/interceptors/query-runner.interceptor';
-import { TransactionQueryRunner } from '../utils/decorators/transaction-query-runner.decorator';
-import type { QueryRunner } from 'typeorm';
 
-@UseInterceptors(QueryRunnerInterceptor)
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('email/register')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiRegister()
   async register(
     @Body() createUserDto: CreateUserDto,
-    @TransactionQueryRunner() queryRunner: QueryRunner,
   ): Promise<{ message: string }> {
     return this.authService.register(createUserDto);
   }
 
   @Post('email/verify-otp')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiVerifyOtp()
   async verifyOtp(
     @Body() verifyOtpDto: VerifyOtpDto,
   ): Promise<{ message: string }> {
-    return this.authService.verifyOtp(
-      verifyOtpDto.email,
-      verifyOtpDto.otpCode,
-    );
+    return this.authService.verifyOtp(verifyOtpDto.email, verifyOtpDto.otpCode);
   }
 
   @Post('email/resend-otp')
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiResendOtp()
   async resendOtp(
@@ -62,6 +51,7 @@ export class AuthController {
   }
 
   @Post('email/login')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiLogin()
   async login(@Body() loginDto: AuthEmailLoginDto): Promise<{
@@ -74,6 +64,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiRefreshToken()
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<{

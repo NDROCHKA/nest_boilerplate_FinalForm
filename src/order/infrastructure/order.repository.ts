@@ -42,6 +42,7 @@ export class OrderRepository {
 
   async create({
     userId,
+    clientOrderId,
     totalAmount,
     shippingAddress,
     phoneNumber,
@@ -49,6 +50,7 @@ export class OrderRepository {
     queryRunner,
   }: {
     userId: number;
+    clientOrderId: string;
     totalAmount: number;
     shippingAddress: string;
     phoneNumber: string;
@@ -68,6 +70,7 @@ export class OrderRepository {
     // Create order
     const orderEntity = repository.create({
       userId,
+      clientOrderId,
       totalAmount,
       shippingAddress,
       phoneNumber,
@@ -87,10 +90,46 @@ export class OrderRepository {
     await itemRepository.save(orderItems);
 
     // Re-fetch with relations
-    return this.findOne({
+    const order = await this.findOne({
       id: savedOrder.id,
       queryRunner,
-    }) as Promise<Order>;
+    });
+    if (!order) {
+      throw new Error('Created order could not be reloaded');
+    }
+    return order;
+  }
+
+  async acquireIdempotencyLock(
+    userId: number,
+    clientOrderId: string,
+    queryRunner?: QueryRunner,
+  ): Promise<void> {
+    if (!queryRunner) return;
+
+    await queryRunner.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
+      `order:${userId}:${clientOrderId}`,
+    ]);
+  }
+
+  async findByClientOrderId({
+    userId,
+    clientOrderId,
+    queryRunner,
+  }: {
+    userId: number;
+    clientOrderId: string;
+    queryRunner?: QueryRunner;
+  }): Promise<Order | null> {
+    const repository = this.getRepository(queryRunner);
+    let queryBuilder = repository.createQueryBuilder('order');
+    queryBuilder = addRelationsAndSelects(queryBuilder, orderFindOneDefault);
+    queryBuilder
+      .andWhere('order.userId = :userId', { userId })
+      .andWhere('order.clientOrderId = :clientOrderId', { clientOrderId });
+
+    const entity = await queryBuilder.getOne();
+    return entity ? OrderMapper.toDomain(entity) : null;
   }
 
   async findManyByUser({
@@ -109,10 +148,7 @@ export class OrderRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('order');
 
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     queryBuilder.andWhere('order.userId = :userId', { userId });
     queryBuilder.orderBy('order.createdAt', 'DESC');
@@ -145,10 +181,7 @@ export class OrderRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('order');
 
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     if (status) {
       queryBuilder.andWhere('order.status = :status', { status });
@@ -182,10 +215,7 @@ export class OrderRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('order');
 
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     queryBuilder.andWhere('order.id = :id', { id });
 
@@ -201,16 +231,22 @@ export class OrderRepository {
   async updateStatus(
     id: number,
     status: OrderStatusEnum,
+    expectedStatus: OrderStatusEnum,
     queryRunner?: QueryRunner,
   ): Promise<Order | null> {
     const repository = this.getRepository(queryRunner);
-    const entity = await repository.preload({ id, status });
+    const result = await repository
+      .createQueryBuilder()
+      .update(OrderEntity)
+      .set({ status })
+      .where('id = :id', { id })
+      .andWhere('status = :expectedStatus', { expectedStatus })
+      .execute();
 
-    if (!entity) {
+    if (result.affected !== 1) {
       return null;
     }
 
-    const saved = await repository.save(entity);
-    return this.findOne({ id: saved.id, queryRunner });
+    return this.findOne({ id, queryRunner });
   }
 }

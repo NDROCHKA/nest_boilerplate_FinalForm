@@ -6,12 +6,6 @@ interface SpinnerProps {
 }
 
 export const Spinner: React.FC<SpinnerProps> = ({ className = '', size = 'md' }) => {
-  const sizeMap = {
-    sm: 'w-4 h-4 border-2',
-    md: 'w-8 h-8 border-2 border-t-accent',
-    lg: 'w-12 h-12 border-3 border-t-accent',
-  };
-
   return (
     <div
       className={`spinner ${className}`}

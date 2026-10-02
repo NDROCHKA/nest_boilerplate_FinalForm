@@ -24,7 +24,6 @@ import { QueryRunnerInterceptor } from '../utils/interceptors/query-runner.inter
 import type { QueryRunner } from 'typeorm';
 import { GetUser } from '../utils/decorators/getUser.decorator';
 
-@UseInterceptors(QueryRunnerInterceptor)
 @ApiTags('User')
 @Controller({ path: 'user', version: '1' })
 export class UserController {
@@ -52,6 +51,7 @@ export class UserController {
   }
 
   @Patch()
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -65,6 +65,7 @@ export class UserController {
   }
 
   @Delete()
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -73,6 +74,10 @@ export class UserController {
     @GetUser() userId: number,
     @TransactionQueryRunner() queryRunner: QueryRunner,
   ): Promise<void> {
-    await this.userService.softDelete({ id: userId, queryRunner });
+    await this.userService.softDelete({
+      id: userId,
+      actorUserId: userId,
+      queryRunner,
+    });
   }
 }

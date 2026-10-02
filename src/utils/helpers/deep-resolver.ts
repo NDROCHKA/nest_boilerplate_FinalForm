@@ -1,6 +1,9 @@
-async function deepResolvePromises(input) {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+async function deepResolvePromises(input: unknown): Promise<unknown> {
   if (input instanceof Promise) {
-    return await input;
+    return deepResolvePromises(await input);
   }
 
   if (Array.isArray(input)) {
@@ -12,9 +15,9 @@ async function deepResolvePromises(input) {
     return input;
   }
 
-  if (typeof input === 'object' && input !== null) {
+  if (isRecord(input)) {
     const keys = Object.keys(input);
-    const resolvedObject = {};
+    const resolvedObject: Record<string, unknown> = {};
 
     for (const key of keys) {
       const resolvedValue = await deepResolvePromises(input[key]);

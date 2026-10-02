@@ -2,9 +2,12 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
+  ArrayMaxSize,
+  MaxLength,
   Max,
   Min,
 } from 'class-validator';
@@ -14,11 +17,13 @@ export class UpdateProductDto {
   @ApiPropertyOptional({ example: 'Updated T-Shirt Name' })
   @IsOptional()
   @IsString()
+  @MaxLength(255)
   name?: string;
 
   @ApiPropertyOptional({ example: 'Updated description' })
   @IsOptional()
   @IsString()
+  @MaxLength(10000)
   description?: string;
 
   @ApiPropertyOptional({ example: 34.99 })
@@ -30,7 +35,8 @@ export class UpdateProductDto {
 
   @ApiPropertyOptional({
     example: 15,
-    description: 'Discount percentage (0-100). Set to 0 or null to remove discount.',
+    description:
+      'Discount percentage (0-100). Set to 0 or null to remove discount.',
   })
   @IsOptional()
   @Type(() => Number)
@@ -45,6 +51,7 @@ export class UpdateProductDto {
   })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(100)
   @IsString({ each: true })
   sizes?: string[];
 
@@ -54,20 +61,22 @@ export class UpdateProductDto {
   })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(100)
   @IsString({ each: true })
   colors?: string[];
 
   @ApiPropertyOptional({ example: 200 })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(0)
   stock?: number;
 
   @ApiPropertyOptional({ example: 2, description: 'Category ID' })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   categoryId?: number;
 
   @ApiPropertyOptional({
@@ -76,6 +85,7 @@ export class UpdateProductDto {
   })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20)
   @IsString({ each: true })
   imageUrls?: string[];
 

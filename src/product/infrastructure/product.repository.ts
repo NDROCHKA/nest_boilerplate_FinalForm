@@ -40,14 +40,21 @@ export class ProductRepository {
   }
 
   async create(
-    data: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'effectivePrice' | 'categoryName' | 'images'>,
+    data: Omit<
+      Product,
+      | 'id'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'deletedAt'
+      | 'effectivePrice'
+      | 'categoryName'
+      | 'images'
+    >,
     imageUrls?: string[],
     queryRunner?: QueryRunner,
   ): Promise<Product> {
     const repository = this.getRepository(queryRunner);
-    const entity = repository.create(
-      ProductMapper.toPersistence(data as Product),
-    );
+    const entity = repository.create(ProductMapper.toPersistence(data));
     const saved = await repository.save(entity);
 
     // Create images if provided
@@ -64,10 +71,14 @@ export class ProductRepository {
     }
 
     // Re-fetch with relations to return complete product
-    return this.findOne({
+    const product = await this.findOne({
       fields: { id: saved.id },
       queryRunner,
-    }) as Promise<Product>;
+    });
+    if (!product) {
+      throw new Error('Created product could not be reloaded');
+    }
+    return product;
   }
 
   async findManyWithPagination({
@@ -90,10 +101,7 @@ export class ProductRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('product');
 
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     // Filter by active status for public endpoints
     if (onlyActive) {
@@ -143,10 +151,7 @@ export class ProductRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('product');
 
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     if (fields.id) {
       queryBuilder.andWhere('product.id = :id', { id: fields.id });
@@ -212,7 +217,26 @@ export class ProductRepository {
     await repository.softDelete(id);
   }
 
-  async decrementStock(
+  async decrementStockIfAvailable(
+    productId: number,
+    quantity: number,
+    queryRunner?: QueryRunner,
+  ): Promise<boolean> {
+    const repository = this.getRepository(queryRunner);
+    const result = await repository
+      .createQueryBuilder()
+      .update(ProductEntity)
+      .set({ stock: () => '"stock" - :quantity' })
+      .where('id = :id', { id: productId })
+      .andWhere('"stock" >= :quantity', { quantity })
+      .andWhere('"isActive" = :isActive', { isActive: true })
+      .andWhere('"deletedAt" IS NULL')
+      .execute();
+
+    return result.affected === 1;
+  }
+
+  async incrementStock(
     productId: number,
     quantity: number,
     queryRunner?: QueryRunner,
@@ -221,8 +245,9 @@ export class ProductRepository {
     await repository
       .createQueryBuilder()
       .update(ProductEntity)
-      .set({ stock: () => `stock - ${quantity}` })
+      .set({ stock: () => '"stock" + :quantity' })
       .where('id = :id', { id: productId })
+      .setParameters({ quantity })
       .execute();
   }
 }

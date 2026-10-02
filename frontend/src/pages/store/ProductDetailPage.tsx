@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ShoppingBag, ChevronLeft, ShieldAlert, Award, Star, Truck, Ruler } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ShieldAlert, Award, Truck, Ruler } from 'lucide-react';
 import { productApi } from '../../api/product.api';
 import { Product } from '../../types/product.types';
 import { useCart } from '../../context/CartContext';

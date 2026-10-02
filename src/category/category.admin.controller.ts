@@ -33,7 +33,6 @@ import type { QueryRunner } from 'typeorm';
  * ADMIN Category Controller — Super Admin only.
  * Full CRUD operations on categories.
  */
-@UseInterceptors(QueryRunnerInterceptor)
 @ApiTags('Category Admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -43,6 +42,7 @@ export class CategoryAdminController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
@@ -75,6 +75,7 @@ export class CategoryAdminController {
   }
 
   @Patch(':id')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.OK)
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -85,6 +86,7 @@ export class CategoryAdminController {
   }
 
   @Delete(':id')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', ParseIntPipe) id: number,

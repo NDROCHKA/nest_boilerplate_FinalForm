@@ -9,4 +9,9 @@ export const runSeed = async () => {
   // If you need to seed more data after partial seed, add it here
 };
 
-void runSeed();
+if (require.main === module) {
+  void runSeed().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}

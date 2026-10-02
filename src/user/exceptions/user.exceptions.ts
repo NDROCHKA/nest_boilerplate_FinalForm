@@ -45,3 +45,13 @@ export class UserEmailNotProvidedException extends UserException {
     );
   }
 }
+
+export class UserCannotRemoveOwnAdminAccessException extends UserException {
+  constructor() {
+    super(
+      'USER_CANNOT_REMOVE_OWN_ADMIN_ACCESS',
+      'A super admin cannot demote or delete their own account.',
+      HttpStatus.FORBIDDEN,
+    );
+  }
+}

@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, Grid, Heart, ShoppingBag } from 'lucide-react';
+import { Search, ShoppingBag } from 'lucide-react';
 import { productApi } from '../../api/product.api';
 import { categoryApi } from '../../api/category.api';
 import { Product } from '../../types/product.types';
 import { Category } from '../../types/category.types';
 import { usePagination } from '../../hooks/usePagination';
 import { useDebounce } from '../../hooks/useDebounce';
-import { Input } from '../../components/ui/Input';
-import { Select } from '../../components/ui/Select';
 import { Pagination } from '../../components/ui/Pagination';
 import { Spinner } from '../../components/ui/Spinner';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -64,7 +62,7 @@ export const ProductsPage: React.FC = () => {
   useEffect(() => {
     // Reset pagination to page 1 on search / filter updates
     resetPagination();
-  }, [categoryId, debouncedSearch]);
+  }, [categoryId, debouncedSearch, resetPagination]);
 
   // Load products when page, limit, categoryId, or search changes
   useEffect(() => {
@@ -94,7 +92,7 @@ export const ProductsPage: React.FC = () => {
     if (debouncedSearch) newParams.search = debouncedSearch;
     newParams.page = String(page);
     setSearchParams(newParams);
-  }, [page, limit, categoryId, debouncedSearch]);
+  }, [page, limit, categoryId, debouncedSearch, setSearchParams, setTotalCount]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }} className="animate-fade-in">
@@ -183,7 +181,7 @@ export const ProductsPage: React.FC = () => {
           >
             {products.map((prod) => {
               const thumbnail = prod.images && prod.images.length > 0
-                ? resolveImageUrl(prod.images.sort((a, b) => a.sortOrder - b.sortOrder)[0].url)
+                ? resolveImageUrl([...prod.images].sort((a, b) => a.sortOrder - b.sortOrder)[0].url)
                 : null;
 
               return (

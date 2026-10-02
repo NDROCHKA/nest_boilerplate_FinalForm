@@ -142,7 +142,11 @@ export class ProductService {
     }
 
     // Re-fetch to get complete data with images
-    return this.findOne({ id, queryRunner }) as Promise<Product>;
+    const reloaded = await this.findOne({ id, queryRunner });
+    if (!reloaded) {
+      throw new ProductNotFoundException({ id });
+    }
+    return reloaded;
   }
 
   async toggleActive({

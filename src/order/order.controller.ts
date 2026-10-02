@@ -28,7 +28,6 @@ import type { QueryRunner } from 'typeorm';
  * USER Order Controller — Requires authentication (JWT).
  * Logged-in users can place orders and view their own orders.
  */
-@UseInterceptors(QueryRunnerInterceptor)
 @ApiTags('Order')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -37,6 +36,7 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.CREATED)
   async create(
     @GetUser() userId: number,

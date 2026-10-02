@@ -6,6 +6,7 @@ import { Order } from '../../types/order.types';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Spinner } from '../../components/ui/Spinner';
+import { ORDER_SHIPPING_FEE } from '../../utils/constants';
 
 export const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -237,17 +238,17 @@ export const OrderDetailPage: React.FC = () => {
           <div style={{ width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
               <span style={{ color: 'var(--color-text-secondary)' }}>Subtotal</span>
-              <span>${order.totalAmount.toFixed(2)}</span>
+              <span>${Math.max(0, order.totalAmount - ORDER_SHIPPING_FEE).toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
               <span style={{ color: 'var(--color-text-secondary)' }}>Lebanon Delivery</span>
-              <span>$4.00</span>
+              <span>${ORDER_SHIPPING_FEE.toFixed(2)}</span>
             </div>
             <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.125rem' }}>
               <span>Grand Total</span>
               <span style={{ color: 'var(--color-accent)' }}>
-                ${(order.totalAmount + 4).toFixed(2)}
+                ${order.totalAmount.toFixed(2)}
               </span>
             </div>
           </div>

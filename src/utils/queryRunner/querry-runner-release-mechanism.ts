@@ -5,14 +5,17 @@ export async function safeRelease(queryRunner: QueryRunner): Promise<void> {
     return;
   }
 
-  for (let attempt = 1; attempt <= 20; attempt += 1) {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       await queryRunner.release();
-      break;
+      return;
     } catch (error) {
       console.error(`Attempt ${attempt} failed to release QueryRunner:`, error);
-      const delay = getExponentialBackoffDelay(attempt);
-      await sleep(delay);
+      if (attempt < maxAttempts) {
+        const delay = getExponentialBackoffDelay(attempt);
+        await sleep(delay);
+      }
     }
   }
 }

@@ -1,8 +1,10 @@
 import {
   Column,
+  Check,
   CreateDateColumn,
   Entity,
   JoinColumn,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -10,15 +12,18 @@ import { UserEntity } from '../../user/infrastructure/user.entity';
 import { OtpTypeEnum } from '../../utils/enums/otp-type.enum';
 
 @Entity({ name: 'otp' })
+@Check('CHK_otp_attempts_nonnegative', '"attempts" >= 0')
+@Check('CHK_otp_type', `"type" IN ('EMAIL_VERIFICATION')`)
+@Index('IDX_otp_user_type_created', ['userId', 'type', 'createdAt'])
 export class OtpEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ primaryKeyConstraintName: 'PK_otp' })
   id: number;
 
   @Column()
   userId: number;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'userId', foreignKeyConstraintName: 'FK_otp_user' })
   user: UserEntity;
 
   @Column({ type: 'varchar' })

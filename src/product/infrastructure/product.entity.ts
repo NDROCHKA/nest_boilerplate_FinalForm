@@ -1,5 +1,6 @@
 import {
   Column,
+  Check,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
@@ -14,11 +15,18 @@ import { CategoryEntity } from '../../category/infrastructure/category.entity';
 import { ProductImageEntity } from './product-image.entity';
 
 @Entity({ name: 'product' })
+@Check('CHK_product_price_positive', '"price" > 0')
+@Check('CHK_product_stock_nonnegative', '"stock" >= 0')
+@Check(
+  'CHK_product_discount_range',
+  '"discountPercent" IS NULL OR "discountPercent" BETWEEN 0 AND 100',
+)
+@Index('IDX_product_catalog', ['categoryId', 'isActive', 'deletedAt'])
 export class ProductEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ primaryKeyConstraintName: 'PK_product' })
   id: number;
 
-  @Index()
+  @Index('IDX_product_name')
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
@@ -46,7 +54,10 @@ export class ProductEntity {
   isActive: boolean;
 
   @ManyToOne(() => CategoryEntity, { nullable: false, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'categoryId' })
+  @JoinColumn({
+    name: 'categoryId',
+    foreignKeyConstraintName: 'FK_product_category',
+  })
   category: CategoryEntity;
 
   @Column({ type: 'integer' })

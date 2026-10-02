@@ -4,6 +4,7 @@ export const orderFindManyDefault: RelationsAndSelectsOptions = {
   select: [
     'order.id',
     'order.userId',
+    'order.clientOrderId',
     'order.totalAmount',
     'order.status',
     'order.shippingAddress',
@@ -32,6 +33,7 @@ export const orderFindOneDefault: RelationsAndSelectsOptions = {
   select: [
     'order.id',
     'order.userId',
+    'order.clientOrderId',
     'order.totalAmount',
     'order.status',
     'order.shippingAddress',

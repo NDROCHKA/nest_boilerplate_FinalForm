@@ -7,8 +7,7 @@ import * as crypto from 'crypto';
 import { UserService } from '../user/user.service';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import {
-  AuthIncorrectPassword,
-  AuthUserNotFound,
+  AuthInvalidCredentials,
   AuthInvalidRefreshToken,
   AuthEmailNotVerified,
   AuthOtpInvalid,
@@ -24,10 +23,14 @@ import { RoleEnum } from '../utils/enums/roles.enum';
 import { OtpRepository } from './infrastructure/otp.repository';
 import { OtpTypeEnum } from '../utils/enums/otp-type.enum';
 import { MailService } from '../mail/mail.service';
+import { JwtRefreshPayloadType } from './strategies/types/jwt-refresh-payload.type';
+import { UserEmailAlreadyExistsException } from '../user/exceptions/user.exceptions';
 
 const OTP_EXPIRY_MINUTES = 5;
 const OTP_MAX_ATTEMPTS = 5;
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
+const DUMMY_PASSWORD_HASH =
+  '$2b$10$EoZmIMI33cOEkoFnOg8zK.DuChUy8QoUa3R8wxf80EQr.UwgHkiS2';
 
 @Injectable()
 export class AuthService {
@@ -42,18 +45,28 @@ export class AuthService {
   // ─── Registration ──────────────────────────────────────────────
 
   async register(createUserDto: CreateUserDto): Promise<{ message: string }> {
+    const response = {
+      message:
+        'If this email can be registered, a verification code has been sent.',
+    };
+
     // Force role to user — public registration can never create admins
     createUserDto.role = RoleEnum.user;
 
-    const user = await this.userService.create({ createUserDto });
+    let user: User;
+    try {
+      user = await this.userService.create({ createUserDto });
+    } catch (error) {
+      if (error instanceof UserEmailAlreadyExistsException) {
+        return response;
+      }
+      throw error;
+    }
 
     // Generate and send OTP
     await this.generateAndSendOtp(user.id, user.email!, user.firstName);
 
-    return {
-      message:
-        'Account created. Please check your email for the verification code.',
-    };
+    return response;
   }
 
   // ─── OTP Generation ────────────────────────────────────────────
@@ -64,7 +77,7 @@ export class AuthService {
     userName?: string | null,
   ): Promise<void> {
     // Generate a 6-digit code
-    const otpCode = crypto.randomInt(100000, 999999).toString();
+    const otpCode = crypto.randomInt(100000, 1000000).toString();
 
     // Hash the code before storing
     const salt = await bcrypt.genSalt();
@@ -77,9 +90,7 @@ export class AuthService {
     );
 
     // Save hashed OTP with expiry
-    const expiresAt = new Date(
-      Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000,
-    );
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
     await this.otpRepository.create({
       userId,
@@ -102,7 +113,7 @@ export class AuthService {
     const user = await this.userService.findOneByEmail({ email });
 
     if (!user) {
-      throw new AuthUserNotFound({ email });
+      throw new AuthOtpInvalid();
     }
 
     // If already verified, return success (idempotent)
@@ -204,34 +215,19 @@ export class AuthService {
       relationsAndSelects: userFindOneAuthLogin,
     });
 
-    // If user not found throw exception
-    if (!user) {
-      throw new AuthUserNotFound({
-        email: loginDto.email,
-      });
-    }
-
-    // Block login if email is not verified
-    if (!user.emailVerified) {
-      throw new AuthEmailNotVerified({
-        email: loginDto.email,
-      });
-    }
-
-    // If user password is empty throw exception
-    if (!user.password) {
-      throw new AuthIncorrectPassword();
-    }
-
-    // Compare password in body (string) with password (hashed) in database
+    // Always compare a hash to reduce account-enumeration timing differences.
     const isValidPassword = await bcrypt.compare(
-      loginDto.password, // string
-      user.password, // hashed
+      loginDto.password,
+      user?.password ?? DUMMY_PASSWORD_HASH,
     );
 
-    // Throw error if password is invalid
-    if (!isValidPassword) {
-      throw new AuthIncorrectPassword();
+    if (!user || !user.password || !isValidPassword) {
+      throw new AuthInvalidCredentials();
+    }
+
+    // Only disclose the verification state after the password is proven.
+    if (!user.emailVerified) {
+      throw new AuthEmailNotVerified();
     }
 
     // Generate tokens
@@ -257,13 +253,22 @@ export class AuthService {
     tokenExpires: number;
   }> {
     try {
-      const payload = await this.jwtService.verifyAsync(refreshToken, {
-        secret: this.configService.get('auth.refreshSecret', { infer: true }),
-      });
+      const payload = await this.jwtService.verifyAsync<JwtRefreshPayloadType>(
+        refreshToken,
+        {
+          secret: this.configService.get('auth.refreshSecret', { infer: true }),
+          issuer: this.configService.get('auth.issuer', { infer: true }),
+          audience: this.configService.get('auth.audience', { infer: true }),
+        },
+      );
+
+      if (payload.tokenUse !== 'refresh') {
+        throw new AuthInvalidRefreshToken();
+      }
 
       // Find user to ensure they still exist
       const user = await this.userService.findOne({
-        id: payload.id as number,
+        id: payload.id,
       });
 
       if (!user) {
@@ -324,6 +329,8 @@ export class AuthService {
     const refreshSecret = this.configService.get('auth.refreshSecret', {
       infer: true,
     });
+    const issuer = this.configService.get('auth.issuer', { infer: true });
+    const audience = this.configService.get('auth.audience', { infer: true });
 
     if (!secret || !refreshSecret) {
       throw new Error('JWT secrets are not configured');
@@ -335,21 +342,27 @@ export class AuthService {
           id: data.id,
           email: data.email || '',
           role: data.role || null,
-        } as any,
+          tokenUse: 'access',
+        },
         {
           secret,
           expiresIn: tokenExpiresIn,
-        } as any,
+          issuer,
+          audience,
+        },
       ),
       this.jwtService.signAsync(
         {
           id: data.id,
           email: data.email || '',
-        } as any,
+          tokenUse: 'refresh',
+        },
         {
           secret: refreshSecret,
           expiresIn: refreshTokenExpiresIn,
-        } as any,
+          issuer,
+          audience,
+        },
       ),
     ]);
 

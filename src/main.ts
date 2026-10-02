@@ -2,15 +2,15 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import {
   ClassSerializerInterceptor,
+  Logger,
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
-import * as bodyParser from 'body-parser';
 import * as express from 'express';
-import { join } from 'path';
 import { useContainer } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 import { AllConfigType } from './config/config.type';
 import { validationOptions } from './utils/helpers';
 import { ResponseTransformInterceptor } from './utils/interceptors/transform.interceptor';
@@ -21,18 +21,63 @@ import {
   getSwaggerDarkCss,
   swaggerOptions,
 } from './swagger-ui/swagger.config';
-import { UserService } from './user/user.service';
-import { RoleEnum } from './utils/enums/roles.enum';
-import { CategorySeedService } from './database/seeds/relational/category/category-seed.service';
-import { ProductSeedService } from './database/seeds/relational/product/product-seed.service';
+
+interface ProxyConfigurableServer {
+  set(setting: 'trust proxy', value: number): void;
+}
+
+const isProxyConfigurableServer = (
+  value: unknown,
+): value is ProxyConfigurableServer =>
+  typeof value === 'object' &&
+  value !== null &&
+  'set' in value &&
+  typeof value.set === 'function';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService<AllConfigType>);
+  const nodeEnv = configService.getOrThrow('app.nodeEnv', { infer: true });
+  const frontendDomain = configService.get('app.frontendDomain', {
+    infer: true,
+  });
+  const uploadsDirectory = configService.getOrThrow('app.uploadsDirectory', {
+    infer: true,
+  });
+  const trustProxyHops = configService.getOrThrow('app.trustProxyHops', {
+    infer: true,
+  });
 
-  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+  if (trustProxyHops > 0) {
+    const server: unknown = app.getHttpAdapter().getInstance();
+    if (!isProxyConfigurableServer(server)) {
+      throw new Error(
+        'The configured HTTP adapter does not support trust proxy',
+      );
+    }
+    server.set('trust proxy', trustProxyHops);
+  }
+
+  app.enableShutdownHooks();
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ limit: '1mb', extended: true }));
+  app.use(
+    '/uploads',
+    express.static(uploadsDirectory, {
+      dotfiles: 'deny',
+      fallthrough: false,
+      setHeaders: (response) => {
+        response.setHeader('X-Content-Type-Options', 'nosniff');
+        response.setHeader(
+          'Cache-Control',
+          'public, max-age=31536000, immutable',
+        );
+      },
+    }),
+  );
 
   app.setGlobalPrefix(
     configService.getOrThrow('app.apiPrefix', { infer: true }),
@@ -51,77 +96,27 @@ async function bootstrap() {
     // ResolvePromisesInterceptor is used to resolve promises in responses because class-transformer can't do it
     // https://github.com/typestack/class-transformer/issues/549
     new ResolvePromisesInterceptor(),
-    new ClassSerializerInterceptor(app.get(Reflector)),// here ask 
+    new ClassSerializerInterceptor(app.get(Reflector)),
     new ResponseTransformInterceptor(),
     new ErrorHandlingInterceptor(),
   );
 
-  app.use(bodyParser.json({ limit: '50mb' })); // Set the limit to 50MB or any size you need
-  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-
-  // Enable CORS for your Vercel domain
   app.enableCors({
-    origin: '*', // Allow all origins
+    origin: frontendDomain ?? false,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization',
-    credentials: true, // If you need to send cookies or authentication headers
+    credentials: false,
   });
 
-  const options = createSwaggerDocumentBuilder();
-  const document = SwaggerModule.createDocument(app, options);
-  const swaggerDarkCss = getSwaggerDarkCss();
+  if (nodeEnv !== 'production') {
+    const options = createSwaggerDocumentBuilder();
+    const document = SwaggerModule.createDocument(app, options);
+    const swaggerDarkCss = getSwaggerDarkCss();
 
-  SwaggerModule.setup('docs', app, document, {
-    swaggerOptions,
-    customCss: swaggerDarkCss,
-  });
-
-  // Idempotently seed default users on startup
-  const userService = app.get(UserService);
-
-  const superAdminEmail = 'cbksuperadmin@gmail.com';
-  const existingSuperAdmin = await userService.findOneByEmail({ email: superAdminEmail });
-  if (!existingSuperAdmin) {
-    const superAdmin = await userService.create({
-      createUserDto: {
-        email: superAdminEmail,
-        password: 'cbkthebest',
-        firstName: 'Super',
-        lastName: 'Admin',
-        phoneNumber: '+1234567890',
-        role: RoleEnum.superAdmin,
-      },
+    SwaggerModule.setup('docs', app, document, {
+      swaggerOptions,
+      customCss: swaggerDarkCss,
     });
-    await userService.markEmailVerified({ id: superAdmin.id });
-    console.log('Seeded default superAdmin on startup: cbksuperadmin@gmail.com');
-  }
-
-  const userEmail = 'cbk@gmail.com';
-  const existingUser = await userService.findOneByEmail({ email: userEmail });
-  if (!existingUser) {
-    const regularUser = await userService.create({
-      createUserDto: {
-        email: userEmail,
-        password: 'cbkthebest',
-        firstName: 'Regular',
-        lastName: 'User',
-        phoneNumber: '+1234567892',
-        role: RoleEnum.user,
-      },
-    });
-    await userService.markEmailVerified({ id: regularUser.id });
-    console.log('Seeded default user on startup: cbk@gmail.com');
-  }
-
-  // Idempotently seed categories and products with images on startup
-  try {
-    const categorySeedService = app.get(CategorySeedService);
-    const productSeedService = app.get(ProductSeedService);
-    await categorySeedService.run();
-    await productSeedService.run();
-    console.log('Categories and Products with photos seeded successfully on startup.');
-  } catch (seedErr) {
-    console.error('Seed execution on startup error:', seedErr);
   }
 
   await app.listen(
@@ -129,4 +124,12 @@ async function bootstrap() {
     '0.0.0.0',
   );
 }
-bootstrap();
+
+void bootstrap().catch((error: unknown) => {
+  const logger = new Logger('Bootstrap');
+  logger.error(
+    'Application failed to start',
+    error instanceof Error ? error.stack : String(error),
+  );
+  process.exitCode = 1;
+});

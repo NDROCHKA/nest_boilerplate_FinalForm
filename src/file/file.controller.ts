@@ -8,40 +8,43 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiBody, ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
+import type { FileFilterCallback } from 'multer';
+import type { Request } from 'express';
 import { FileService } from './file.service';
-import { AuthGuard } from '@nestjs/passport';
-
-const uploadsDir = join(process.cwd(), 'uploads');
-if (!existsSync(uploadsDir)) {
-  mkdirSync(uploadsDir, { recursive: true });
-}
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RoleEnum } from '../utils/enums/roles.enum';
 
 const multerOptions = {
-  storage: diskStorage({
-    destination: (req, file, cb) => {
-      if (!existsSync(uploadsDir)) {
-        mkdirSync(uploadsDir, { recursive: true });
-      }
-      cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const ext = extname(file.originalname).toLowerCase() || '.jpg';
-      cb(null, `photo-${uniqueSuffix}${ext}`);
-    },
-  }),
+  storage: memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 5 * 1024 * 1024,
+    files: 10,
+    fields: 10,
+    parts: 20,
   },
-  fileFilter: (req: any, file: Express.Multer.File, cb: any) => {
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|svg\+xml)$/)) {
-      cb(null, true);
+  fileFilter: (
+    _request: Request,
+    file: Express.Multer.File,
+    callback: FileFilterCallback,
+  ) => {
+    if (/^image\/(jpeg|png|gif|webp)$/.test(file.mimetype)) {
+      callback(null, true);
     } else {
-      cb(new BadRequestException('Only image files (JPG, PNG, GIF, WEBP, SVG) are allowed!'), false);
+      callback(
+        new BadRequestException(
+          'Only JPEG, PNG, GIF, and WEBP image files are allowed',
+        ),
+      );
     }
   },
 };
@@ -51,12 +54,13 @@ const multerOptions = {
   path: 'files',
   version: '1',
 })
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(RoleEnum.superAdmin)
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
   @Post('upload')
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Upload a single photo/image file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -71,13 +75,11 @@ export class FileController {
     },
   })
   @UseInterceptors(FileInterceptor('file', multerOptions))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
     return this.fileService.uploadFile(file);
   }
 
   @Post('upload-multiple')
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Upload multiple photo/image files' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -95,7 +97,7 @@ export class FileController {
     },
   })
   @UseInterceptors(FilesInterceptor('files', 10, multerOptions))
-  uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
+  async uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
     return this.fileService.uploadFiles(files);
   }
 }

@@ -26,6 +26,18 @@ class EnvironmentVariablesValidator {
 export default registerAs<MailConfig>('mail', () => {
   validateConfig(process.env, EnvironmentVariablesValidator);
 
+  if (
+    process.env.NODE_ENV === 'production' &&
+    (!process.env.MAIL_HOST ||
+      !process.env.MAIL_USER ||
+      !process.env.MAIL_PASSWORD ||
+      !process.env.MAIL_DEFAULT_EMAIL)
+  ) {
+    throw new Error(
+      'MAIL_HOST, MAIL_USER, MAIL_PASSWORD, and MAIL_DEFAULT_EMAIL are required in production',
+    );
+  }
+
   return {
     host: process.env.MAIL_HOST || 'smtp.gmail.com',
     port: process.env.MAIL_PORT ? parseInt(process.env.MAIL_PORT, 10) : 587,

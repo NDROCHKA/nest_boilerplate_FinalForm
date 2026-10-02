@@ -11,6 +11,9 @@ export class ConfigHelper {
   }
 
   public getShowErrorDetails(): boolean {
-    return process.env.SHOW_ERROR_DETAILS === 'true';
+    return (
+      process.env.NODE_ENV !== 'production' &&
+      process.env.SHOW_ERROR_DETAILS === 'true'
+    );
   }
 }

@@ -33,7 +33,6 @@ import type { QueryRunner } from 'typeorm';
  * ADMIN Product Controller — Super Admin only.
  * Full CRUD on products: create, update, toggle, delete, set discounts.
  */
-@UseInterceptors(QueryRunnerInterceptor)
 @ApiTags('Product Admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -43,6 +42,7 @@ export class ProductAdminController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createProductDto: CreateProductDto,
@@ -79,6 +79,7 @@ export class ProductAdminController {
   }
 
   @Patch(':id')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.OK)
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -89,6 +90,7 @@ export class ProductAdminController {
   }
 
   @Patch(':id/toggle')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.OK)
   async toggleActive(
     @Param('id', ParseIntPipe) id: number,
@@ -98,6 +100,7 @@ export class ProductAdminController {
   }
 
   @Delete(':id')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', ParseIntPipe) id: number,

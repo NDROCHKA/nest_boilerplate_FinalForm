@@ -4,7 +4,7 @@ import { authApi } from '../../api/auth.api';
 import { useToast } from '../../context/ToastContext';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Shield, ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { CrusaderLogo } from '../../components/brand/CrusaderLogo';
 
 export const RegisterPage: React.FC = () => {
@@ -33,8 +33,10 @@ export const RegisterPage: React.FC = () => {
     }
     if (!password) {
       tempErrors.password = 'Password is required';
-    } else if (password.length < 3) {
-      tempErrors.password = 'Password must be at least 3 characters';
+    } else if (password.length < 8) {
+      tempErrors.password = 'Password must be at least 8 characters';
+    } else if (password.length > 72) {
+      tempErrors.password = 'Password must be at most 72 characters';
     }
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;

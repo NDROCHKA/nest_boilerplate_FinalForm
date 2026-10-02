@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Ruler, Sparkles, CheckCircle2, Shield, Info, ArrowRight } from 'lucide-react';
+import { Ruler, Sparkles, Info } from 'lucide-react';
 import { SIZE_CHARTS, FitCategoryKey, cmToInches } from '../../utils/sizeCharts';
-import { Link } from 'react-router-dom';
-import { Button } from '../../components/ui/Button';
 
 export const SizeGuidePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<FitCategoryKey>('oversized');

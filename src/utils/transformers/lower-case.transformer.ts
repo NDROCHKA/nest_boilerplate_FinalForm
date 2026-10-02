@@ -4,4 +4,7 @@ import { MaybeType } from '../types/maybe.type';
 
 export const lowerCaseTransformer = (
   params: TransformFnParams,
-): MaybeType<string> => params.value?.toLowerCase().trim();
+): MaybeType<string> => {
+  const value: unknown = params.value;
+  return typeof value === 'string' ? value.toLowerCase().trim() : undefined;
+};

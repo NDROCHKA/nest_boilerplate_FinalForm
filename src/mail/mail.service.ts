@@ -8,9 +8,20 @@ export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
   private transporter: nodemailer.Transporter;
 
-  constructor(
-    private readonly configService: ConfigService<AllConfigType>,
-  ) { }
+  constructor(private readonly configService: ConfigService<AllConfigType>) {}
+
+  private escapeHtml(value: string): string {
+    return value.replace(/[&<>'"]/g, (character) => {
+      const entities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;',
+      };
+      return entities[character];
+    });
+  }
 
   async onModuleInit(): Promise<void> {
     const host = this.configService.get('mail.host', { infer: true });
@@ -40,11 +51,7 @@ export class MailService implements OnModuleInit {
     }
   }
 
-  async sendOtp(
-    to: string,
-    otpCode: string,
-    userName?: string,
-  ): Promise<void> {
+  async sendOtp(to: string, otpCode: string, userName?: string): Promise<void> {
     const defaultName = this.configService.get('mail.defaultName', {
       infer: true,
     });
@@ -52,7 +59,7 @@ export class MailService implements OnModuleInit {
       infer: true,
     });
 
-    const greeting = userName ? `Hi ${userName}` : 'Hi there';
+    const greeting = userName ? `Hi ${this.escapeHtml(userName)}` : 'Hi there';
 
     const html = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb;">
@@ -95,7 +102,7 @@ export class MailService implements OnModuleInit {
       infer: true,
     });
 
-    const greeting = userName ? `Hi ${userName}` : 'Hi there';
+    const greeting = userName ? `Hi ${this.escapeHtml(userName)}` : 'Hi there';
 
     const html = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #0f1015; border-radius: 12px; border: 1px solid #222530; color: #ffffff;">
@@ -107,7 +114,7 @@ export class MailService implements OnModuleInit {
           Your order <strong style="color: #ffffff;">#${orderId}</strong> has been officially confirmed by our team! Your items are now being prepared for delivery.
         </p>
         <div style="background: #181a20; border-radius: 8px; padding: 20px; border-left: 4px solid #d63031; margin-bottom: 24px;">
-          <p style="margin: 0 0 8px 0; font-size: 14px; color: #e5e7eb;"><strong>🚚 Shipping Status:</strong> Out for Delivery</p>
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #e5e7eb;"><strong>Shipping Status:</strong> Preparing for shipment</p>
           <p style="margin: 0 0 8px 0; font-size: 14px; color: #9ca3af;"><strong>⏱️ Estimated Delivery:</strong> 4 to 7 Days</p>
           <p style="margin: 0; font-size: 14px; color: #9ca3af;"><strong>💵 Payment Method:</strong> Cash on Delivery ($4.00 shipping fee included)</p>
         </div>
@@ -148,7 +155,7 @@ export class MailService implements OnModuleInit {
       infer: true,
     });
 
-    const greeting = userName ? `Hi ${userName}` : 'Hi there';
+    const greeting = userName ? `Hi ${this.escapeHtml(userName)}` : 'Hi there';
 
     const html = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #0f1015; border-radius: 12px; border: 1px solid #222530; color: #ffffff;">

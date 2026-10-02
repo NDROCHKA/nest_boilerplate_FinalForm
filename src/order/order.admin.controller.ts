@@ -25,12 +25,13 @@ import { OrderNotFoundException } from './exceptions/order.exceptions';
 import { TransactionQueryRunner } from '../utils/decorators/transaction-query-runner.decorator';
 import { QueryRunnerInterceptor } from '../utils/interceptors/query-runner.interceptor';
 import type { QueryRunner } from 'typeorm';
+import { TransactionAfterCommit } from '../utils/decorators/transaction-after-commit.decorator';
+import type { RegisterAfterCommit } from '../utils/decorators/transaction-after-commit.decorator';
 
 /**
  * ADMIN Order Controller — Super Admin only.
  * View all orders and manage order statuses.
  */
-@UseInterceptors(QueryRunnerInterceptor)
 @ApiTags('Order Admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -64,16 +65,27 @@ export class OrderAdminController {
   }
 
   @Patch(':id/status')
+  @UseInterceptors(QueryRunnerInterceptor)
   @HttpCode(HttpStatus.OK)
   async updateStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
     @TransactionQueryRunner() queryRunner: QueryRunner,
+    @TransactionAfterCommit() afterCommit: RegisterAfterCommit,
   ): Promise<Order> {
-    return this.orderService.updateStatus({
+    const order = await this.orderService.updateStatus({
       id,
       status: updateOrderStatusDto.status,
       queryRunner,
     });
+
+    afterCommit(() =>
+      this.orderService.sendStatusNotification(
+        order.id,
+        updateOrderStatusDto.status,
+      ),
+    );
+
+    return order;
   }
 }

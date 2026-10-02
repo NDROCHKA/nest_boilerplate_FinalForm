@@ -7,7 +7,11 @@ import { CategoryEntity } from '../../../../category/infrastructure/category.ent
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ProductEntity, ProductImageEntity, CategoryEntity]),
+    TypeOrmModule.forFeature([
+      ProductEntity,
+      ProductImageEntity,
+      CategoryEntity,
+    ]),
   ],
   providers: [ProductSeedService],
   exports: [ProductSeedService],

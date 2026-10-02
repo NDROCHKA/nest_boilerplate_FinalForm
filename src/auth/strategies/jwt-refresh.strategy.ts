@@ -20,11 +20,13 @@ export class JwtRefreshStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: refreshSecret,
+      issuer: configService.get('auth.issuer', { infer: true }),
+      audience: configService.get('auth.audience', { infer: true }),
     });
   }
 
   public validate(payload: JwtRefreshPayloadType): JwtRefreshPayloadType {
-    if (!payload.id || !payload.email) {
+    if (!payload.id || !payload.email || payload.tokenUse !== 'refresh') {
       throw new UnauthorizedException();
     }
     return payload;

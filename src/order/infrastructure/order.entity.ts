@@ -1,7 +1,9 @@
 import {
   Column,
+  Check,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -13,16 +15,30 @@ import { OrderItemEntity } from './order-item.entity';
 import { OrderStatusEnum } from '../../utils/enums/order-status.enum';
 
 @Entity({ name: 'order' })
+@Check('CHK_order_total_nonnegative', '"totalAmount" >= 0')
+@Check(
+  'CHK_order_status',
+  `"status" IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')`,
+)
+@Check('CHK_order_payment_method', `"paymentMethod" IN ('cash_on_delivery')`)
+@Index('UQ_order_user_client_order_id', ['userId', 'clientOrderId'], {
+  unique: true,
+})
+@Index('IDX_order_user_created', ['userId', 'createdAt'])
+@Index('IDX_order_status_created', ['status', 'createdAt'])
 export class OrderEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ primaryKeyConstraintName: 'PK_order' })
   id: number;
 
   @ManyToOne(() => UserEntity, { nullable: false, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'userId', foreignKeyConstraintName: 'FK_order_user' })
   user: UserEntity;
 
   @Column({ type: 'integer' })
   userId: number;
+
+  @Column({ type: 'uuid' })
+  clientOrderId: string;
 
   @OneToMany(() => OrderItemEntity, (item) => item.order, {
     cascade: true,

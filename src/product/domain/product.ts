@@ -54,7 +54,9 @@ export class Product {
   @Expose()
   get effectivePrice(): number {
     if (this.discountPercent && this.discountPercent > 0) {
-      return +(this.price - (this.price * this.discountPercent) / 100).toFixed(2);
+      return +(this.price - (this.price * this.discountPercent) / 100).toFixed(
+        2,
+      );
     }
     return +this.price;
   }

@@ -3,7 +3,9 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 export function ApiRegister() {
   return applyDecorators(
-    ApiOperation({ summary: 'Register a new user and send OTP verification email' }),
+    ApiOperation({
+      summary: 'Register a new user and send OTP verification email',
+    }),
     ApiResponse({
       status: 201,
       description: 'Account created. Verification email sent.',
@@ -12,7 +14,8 @@ export function ApiRegister() {
         properties: {
           message: {
             type: 'string',
-            example: 'Account created. Please check your email for the verification code.',
+            example:
+              'Account created. Please check your email for the verification code.',
           },
         },
       },

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, ArrowLeft, Loader2, CreditCard } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, CreditCard } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { orderApi } from '../../api/order.api';
 import { useToast } from '../../context/ToastContext';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { ORDER_SHIPPING_FEE } from '../../utils/constants';
 
 export const CheckoutPage: React.FC = () => {
   const { items, totalAmount, clearCart } = useCart();
@@ -16,6 +17,7 @@ export const CheckoutPage: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const clientOrderId = useRef(crypto.randomUUID());
 
   if (items.length === 0) {
     return (
@@ -44,6 +46,7 @@ export const CheckoutPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       const orderPayload = {
+        clientOrderId: clientOrderId.current,
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -65,9 +68,6 @@ export const CheckoutPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  const shipping = 0;
-  const grandTotal = totalAmount + shipping;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }} className="animate-fade-in">
@@ -179,7 +179,7 @@ export const CheckoutPage: React.FC = () => {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--color-text-secondary)' }}>Lebanon Delivery (4-7 Days)</span>
-              <span style={{ fontWeight: 600 }}>$4.00</span>
+              <span style={{ fontWeight: 600 }}>${ORDER_SHIPPING_FEE.toFixed(2)}</span>
             </div>
           </div>
 
@@ -187,7 +187,7 @@ export const CheckoutPage: React.FC = () => {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.125rem' }}>
             <span>Total</span>
-            <span style={{ color: 'var(--color-accent)' }}>${(totalAmount + 4).toFixed(2)}</span>
+            <span style={{ color: 'var(--color-accent)' }}>${(totalAmount + ORDER_SHIPPING_FEE).toFixed(2)}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem' }}>

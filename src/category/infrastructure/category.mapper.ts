@@ -14,7 +14,10 @@ export class CategoryMapper {
     return category;
   }
 
-  static toPersistence(category: Category): CategoryEntity {
+  static toPersistence(
+    category: Pick<Category, 'name' | 'description' | 'imageUrl'> &
+      Partial<Pick<Category, 'id'>>,
+  ): CategoryEntity {
     const entity = new CategoryEntity();
     if (category.id !== undefined) {
       entity.id = category.id;

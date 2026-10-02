@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, ShieldAlert, Calendar, Mail, Phone, Search } from 'lucide-react';
+import { Eye, Mail, Phone, Search } from 'lucide-react';
 import { userAdminApi } from '../../../api/user-admin.api';
 import { User, RoleEnum } from '../../../types/user.types';
 import { usePagination } from '../../../hooks/usePagination';
@@ -22,7 +22,6 @@ export const UsersListPage: React.FC = () => {
   const {
     page,
     limit,
-    totalCount,
     totalPages,
     hasNextPage,
     hasPrevPage,
@@ -33,7 +32,7 @@ export const UsersListPage: React.FC = () => {
     resetPagination,
   } = usePagination(10);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     try {
       // Build DTO query
@@ -51,15 +50,15 @@ export const UsersListPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [debouncedSearch, limit, page, setTotalCount, showToast]);
 
   useEffect(() => {
     resetPagination();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, resetPagination]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, limit, debouncedSearch]);
+  }, [fetchUsers]);
 
   const handleDelete = async (id: number, email: string | null) => {
     if (!window.confirm(`Are you sure you want to deactivate user account "${email || id}"?`)) return;

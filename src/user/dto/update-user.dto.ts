@@ -1,49 +1,31 @@
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
-import {
-  IsEmail,
-  IsNotEmpty,
-  MinLength,
-  IsString,
-  IsOptional,
-  IsEnum,
-} from 'class-validator';
-import { RoleEnum } from '../../utils/enums/roles.enum';
-import { lowerCaseTransformer } from '../../utils/transformers/lower-case.transformer';
-import { Transform } from 'class-transformer';
-
-// export class UpdateUserDto extends PartialType(CreateUserDto) {}
+import { IsString, IsOptional, MaxLength } from 'class-validator';
 
 export class UpdateUserDto {
-  @ApiProperty({ example: 'user@example.com' })
-  @Transform(lowerCaseTransformer)
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @ApiProperty({ example: '+11234567890' })
-  @IsNotEmpty()
-  phoneNumber: string;
-
-  @ApiProperty({ minLength: 3 })
-  @MinLength(3)
+  @ApiPropertyOptional({ example: '+11234567890' })
+  @IsOptional()
   @IsString()
-  password: string;
+  @MaxLength(32)
+  phoneNumber?: string;
 
-  @ApiProperty({ example: 'Jane' })
+  @ApiPropertyOptional({ example: 'Jane' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  firstName: string;
+  @MaxLength(120)
+  firstName?: string;
 
-  @ApiProperty({ example: 'Doe' })
+  @ApiPropertyOptional({ example: 'Doe' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  lastName: string;
+  @MaxLength(120)
+  lastName?: string;
 
   @ApiPropertyOptional({
     example: 'https://example.com/avatar.jpg',
   })
   @IsOptional()
   @IsString()
+  @MaxLength(2048)
   profilePicture?: string | null;
 }

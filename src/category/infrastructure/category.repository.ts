@@ -33,9 +33,7 @@ export class CategoryRepository {
     queryRunner?: QueryRunner,
   ): Promise<Category> {
     const repository = this.getRepository(queryRunner);
-    const entity = repository.create(
-      CategoryMapper.toPersistence(data as Category),
-    );
+    const entity = repository.create(CategoryMapper.toPersistence(data));
     const saved = await repository.save(entity);
     return CategoryMapper.toDomain(saved);
   }
@@ -54,10 +52,7 @@ export class CategoryRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('category');
 
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     queryBuilder.orderBy('category.name', 'ASC');
 
@@ -85,10 +80,7 @@ export class CategoryRepository {
     const repository = this.getRepository(queryRunner);
     let queryBuilder = repository.createQueryBuilder('category');
 
-    queryBuilder = await addRelationsAndSelects(
-      queryBuilder,
-      relationsAndSelects,
-    );
+    queryBuilder = addRelationsAndSelects(queryBuilder, relationsAndSelects);
 
     if (fields.id) {
       queryBuilder.andWhere('category.id = :id', { id: fields.id });

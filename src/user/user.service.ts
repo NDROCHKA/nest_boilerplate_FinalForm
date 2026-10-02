@@ -10,6 +10,7 @@ import {
   UserEmailAlreadyExistsException,
   UserEmailNotProvidedException,
   UserNotFoundException,
+  UserCannotRemoveOwnAdminAccessException,
 } from './exceptions/user.exceptions';
 import { User } from './domain/user';
 import { InfinityPaginationWithTotalResultType } from '../utils/types/infinity-pagination-result.type';
@@ -121,24 +122,11 @@ export class UserService {
       throw new UserNotFoundException({ id });
     }
 
-    // find if email already exists (or make the email unique true on DB level )
-    const userWithSameEmail = await this.userRepository.findOne({
-      fields: { email: updateUserDto.email },
+    const updated = await this.userRepository.update(
+      id,
+      updateUserDto,
       queryRunner,
-    });
-
-    if (userWithSameEmail && userWithSameEmail.id !== id) {
-      throw new UserEmailAlreadyExistsException({
-        email: updateUserDto.email,
-      });
-    }
-
-    // Hash password if provided
-    if (updateUserDto.password) {
-      updateUserDto.password = await this.hashPassword(updateUserDto.password);
-    }
-
-    const updated = await this.userRepository.update(id, updateUserDto);
+    );
     if (!updated) {
       throw new UserNotFoundException({ id });
     }
@@ -148,9 +136,11 @@ export class UserService {
 
   async softDelete({
     id,
+    actorUserId,
     queryRunner,
   }: {
     id: number;
+    actorUserId?: number;
     queryRunner?: QueryRunner;
   }): Promise<void> {
     const existingUser = await this.userRepository.findOne({
@@ -161,15 +151,24 @@ export class UserService {
       throw new UserNotFoundException({ id });
     }
 
+    if (
+      existingUser.role === RoleEnum.superAdmin &&
+      actorUserId === existingUser.id
+    ) {
+      throw new UserCannotRemoveOwnAdminAccessException();
+    }
+
     await this.userRepository.softDelete({ id, queryRunner });
   }
 
   async updateRole({
     id,
+    actorUserId,
     role,
     queryRunner,
   }: {
     id: number;
+    actorUserId: number;
     role: RoleEnum;
     queryRunner?: QueryRunner;
   }): Promise<User> {
@@ -177,6 +176,14 @@ export class UserService {
 
     if (!user) {
       throw new UserNotFoundException({ id });
+    }
+
+    if (
+      user.id === actorUserId &&
+      user.role === RoleEnum.superAdmin &&
+      role !== RoleEnum.superAdmin
+    ) {
+      throw new UserCannotRemoveOwnAdminAccessException();
     }
 
     const updated = await this.userRepository.update(id, { role }, queryRunner);

@@ -39,13 +39,40 @@ const normalizeError = async (response: Response): Promise<ApiError> => {
       message: errorData.message || response.statusText || 'An unexpected error occurred.',
       details: errorData.details || undefined,
     };
-  } catch (e) {
+  } catch {
     return {
       statusCode: response.status,
       errorCode: 'HTTP_ERROR',
       message: response.statusText || 'An unexpected network error occurred.',
     };
   }
+};
+
+const parseSuccessResponse = async <T>(response: Response): Promise<T> => {
+  if (response.status === 204) {
+    return null as T;
+  }
+
+  const bodyJson = await response.json();
+
+  if (
+    bodyJson &&
+    typeof bodyJson === 'object' &&
+    'data' in bodyJson &&
+    'totalCount' in bodyJson
+  ) {
+    return {
+      data: bodyJson.data,
+      totalCount: bodyJson.totalCount,
+      hasNextPage: bodyJson.hasNextPage,
+    } as T;
+  }
+
+  if (bodyJson && typeof bodyJson === 'object' && 'data' in bodyJson) {
+    return bodyJson.data as T;
+  }
+
+  return bodyJson as T;
 };
 
 const refreshTokenRequest = async (): Promise<{ token: string; refreshToken: string; tokenExpires: number }> => {
@@ -107,8 +134,9 @@ export const client = async <T>(endpoint: string, options: RequestOptions = {}):
   try {
     const response = await fetch(url, fetchOptions);
 
-    if (response.status === 401 && endpoint !== 'auth/email/login' && endpoint !== 'auth/refresh') {
-      // Handle JWT Token Expiration and Auto Refresh
+    if (response.status === 401 && !endpoint.replace(/^\//, '').startsWith('auth/')) {
+      let newToken: string;
+
       if (!isRefreshing) {
         isRefreshing = true;
         try {
@@ -117,10 +145,9 @@ export const client = async <T>(endpoint: string, options: RequestOptions = {}):
           localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newTokens.refreshToken);
           localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRES, String(newTokens.tokenExpires));
           
-          isRefreshing = false;
           processQueue(null, newTokens.token);
+          newToken = newTokens.token;
         } catch (refreshErr) {
-          isRefreshing = false;
           processQueue(refreshErr, null);
           // Token refresh failed completely - trigger logout
           localStorage.removeItem(STORAGE_KEYS.TOKEN);
@@ -130,55 +157,28 @@ export const client = async <T>(endpoint: string, options: RequestOptions = {}):
             unauthorizedHandler();
           }
           throw refreshErr;
+        } finally {
+          isRefreshing = false;
         }
+      } else {
+        newToken = await new Promise<string>((resolve, reject) => {
+          refreshQueue.push({ resolve, reject });
+        });
       }
 
-      // Queue other requests while token is refreshing
-      return new Promise<T>((resolve, reject) => {
-        refreshQueue.push({
-          resolve: (newToken: string) => {
-            headers.set('Authorization', `Bearer ${newToken}`);
-            fetch(url, fetchOptions)
-              .then((res) => {
-                if (!res.ok) {
-                  return normalizeError(res).then(reject);
-                }
-                return res.json().then((body: ApiResponse<T>) => resolve(body.data));
-              })
-              .catch(reject);
-          },
-          reject: (err) => {
-            reject(err);
-          },
-        });
-      });
+      headers.set('Authorization', `Bearer ${newToken}`);
+      const retryResponse = await fetch(url, fetchOptions);
+      if (!retryResponse.ok) {
+        throw await normalizeError(retryResponse);
+      }
+      return parseSuccessResponse<T>(retryResponse);
     }
 
     if (!response.ok) {
       throw await normalizeError(response);
     }
 
-    // 204 No Content has no body
-    if (response.status === 204) {
-      return null as unknown as T;
-    }
-
-    const bodyJson = await response.json();
-    
-    // Support NestJS relational/paginated envelopes containing status success
-    if (bodyJson && typeof bodyJson === 'object' && 'data' in bodyJson && 'totalCount' in bodyJson) {
-      return {
-        data: bodyJson.data,
-        totalCount: bodyJson.totalCount,
-        hasNextPage: bodyJson.hasNextPage,
-      } as unknown as T;
-    }
-
-    if (bodyJson && typeof bodyJson === 'object' && 'data' in bodyJson) {
-      return bodyJson.data;
-    }
-
-    return bodyJson;
+    return parseSuccessResponse<T>(response);
   } catch (error: any) {
     if (error.statusCode) {
       // Already normalized custom api error

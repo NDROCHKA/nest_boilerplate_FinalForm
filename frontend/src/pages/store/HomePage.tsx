@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShoppingBag, FolderOpen, Heart } from 'lucide-react';
+import { ArrowRight, ShoppingBag, FolderOpen } from 'lucide-react';
 import { productApi } from '../../api/product.api';
 import { categoryApi } from '../../api/category.api';
 import { Product } from '../../types/product.types';
@@ -8,7 +8,6 @@ import { Category } from '../../types/category.types';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
 import { getDailyPsalm } from '../../utils/psalms';
-import { useToast } from '../../context/ToastContext';
 import { ShareArmorModal } from '../../components/modals/ShareArmorModal';
 import { CrusaderLogo } from '../../components/brand/CrusaderLogo';
 import { resolveImageUrl } from '../../utils/imageUrl';
@@ -20,7 +19,6 @@ export const HomePage: React.FC = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
   const dailyPsalm = getDailyPsalm();
-  const { showToast } = useToast();
 
   const handleShareVerse = () => {
     setShareModalOpen(true);

@@ -7,12 +7,19 @@ import { SeedModule } from './seed.module';
 export const runPartialSeed = async () => {
   const app = await NestFactory.create(SeedModule);
 
-  // Order matters: categories must exist before products
-  await app.get(UserSeedService).run();
-  await app.get(CategorySeedService).run();
-  await app.get(ProductSeedService).run();
-
-  await app.close();
+  try {
+    // Order matters: categories must exist before products
+    await app.get(UserSeedService).run();
+    await app.get(CategorySeedService).run();
+    await app.get(ProductSeedService).run();
+  } finally {
+    await app.close();
+  }
 };
 
-void runPartialSeed();
+if (require.main === module) {
+  void runPartialSeed().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}

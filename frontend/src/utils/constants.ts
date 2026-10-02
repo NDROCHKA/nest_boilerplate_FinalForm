@@ -1,12 +1,8 @@
 const getApiBaseUrl = (): string => {
   if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
   }
-  const hostname =
-    typeof window !== 'undefined' && window.location.hostname
-      ? window.location.hostname
-      : 'localhost';
-  return `http://${hostname}:3000/api/v1`;
+  return '/api/v1';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
@@ -19,3 +15,4 @@ export const STORAGE_KEYS = {
 };
 
 export const DEFAULT_PAGE_LIMIT = 10;
+export const ORDER_SHIPPING_FEE = 4;

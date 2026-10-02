@@ -8,6 +8,7 @@ import {
   IsString,
   ValidateIf,
   IsBoolean,
+  IsIn,
 } from 'class-validator';
 // import validateConfig from '../../utils/validate-config';
 import { DatabaseConfig } from './database-config.type';
@@ -74,33 +75,47 @@ import validateConfig from '../../config/validate-config';
 // }
 
 class EnvironmentVariablesValidator {
-  @ValidateIf((envValues) => envValues.DATABASE_URL)
+  @ValidateIf((envValues: EnvironmentVariablesValidator) =>
+    Boolean(envValues.DATABASE_URL),
+  )
   @IsString()
   DATABASE_URL: string;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
-  @IsString()
+  @ValidateIf(
+    (envValues: EnvironmentVariablesValidator) => !envValues.DATABASE_URL,
+  )
+  @IsIn(['postgres'])
   DATABASE_TYPE: string;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
+  @ValidateIf(
+    (envValues: EnvironmentVariablesValidator) => !envValues.DATABASE_URL,
+  )
   @IsString()
   DATABASE_HOST: string;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
+  @ValidateIf(
+    (envValues: EnvironmentVariablesValidator) => !envValues.DATABASE_URL,
+  )
   @IsInt()
   @Min(0)
   @Max(65535)
   DATABASE_PORT: number;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
+  @ValidateIf(
+    (envValues: EnvironmentVariablesValidator) => !envValues.DATABASE_URL,
+  )
   @IsString()
   DATABASE_PASSWORD: string;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
+  @ValidateIf(
+    (envValues: EnvironmentVariablesValidator) => !envValues.DATABASE_URL,
+  )
   @IsString()
   DATABASE_NAME: string;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
+  @ValidateIf(
+    (envValues: EnvironmentVariablesValidator) => !envValues.DATABASE_URL,
+  )
   @IsString()
   DATABASE_USERNAME: string;
 
@@ -137,10 +152,19 @@ export default registerAs<DatabaseConfig>('database', () => {
   {
     validateConfig(process.env, EnvironmentVariablesValidator);
 
+    if (
+      process.env.NODE_ENV === 'production' &&
+      process.env.DATABASE_SYNCHRONIZE === 'true'
+    ) {
+      throw new Error(
+        'DATABASE_SYNCHRONIZE must be false in production; run migrations instead',
+      );
+    }
+
     return {
-      isDocumentDatabase: ['mongodb'].includes(process.env.DATABASE_TYPE ?? ''),
+      isDocumentDatabase: false,
       url: process.env.DATABASE_URL,
-      type: process.env.DATABASE_TYPE,
+      type: 'postgres',
       host: process.env.DATABASE_HOST,
       port: process.env.DATABASE_PORT
         ? parseInt(process.env.DATABASE_PORT, 10)

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, ShoppingBag, Search } from 'lucide-react';
 import { productAdminApi } from '../../../api/product-admin.api';
@@ -25,7 +25,6 @@ export const ProductsListPage: React.FC = () => {
   const {
     page,
     limit,
-    totalCount,
     totalPages,
     hasNextPage,
     hasPrevPage,
@@ -49,7 +48,7 @@ export const ProductsListPage: React.FC = () => {
     loadCategories();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await productAdminApi.getAll({
@@ -66,15 +65,15 @@ export const ProductsListPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [categoryId, debouncedSearch, limit, page, setTotalCount, showToast]);
 
   useEffect(() => {
     resetPagination();
-  }, [categoryId, debouncedSearch]);
+  }, [categoryId, debouncedSearch, resetPagination]);
 
   useEffect(() => {
     fetchProducts();
-  }, [page, limit, categoryId, debouncedSearch]);
+  }, [fetchProducts]);
 
   const handleToggleActive = async (id: number) => {
     try {
@@ -112,7 +111,7 @@ export const ProductsListPage: React.FC = () => {
       sortable: false,
       render: (item) => {
         const thumbnail = item.images && item.images.length > 0
-          ? item.images.sort((a, b) => a.sortOrder - b.sortOrder)[0].url
+          ? [...item.images].sort((a, b) => a.sortOrder - b.sortOrder)[0].url
           : null;
 
         return (

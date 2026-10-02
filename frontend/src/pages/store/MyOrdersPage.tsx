@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Eye, Calendar, DollarSign, PackageOpen } from 'lucide-react';
+import { ShoppingBag, Eye, Calendar, DollarSign } from 'lucide-react';
 import { orderApi } from '../../api/order.api';
 import { Order } from '../../types/order.types';
 import { usePagination } from '../../hooks/usePagination';
@@ -17,7 +17,6 @@ export const MyOrdersPage: React.FC = () => {
   const {
     page,
     limit,
-    totalCount,
     totalPages,
     hasNextPage,
     hasPrevPage,
@@ -42,7 +41,7 @@ export const MyOrdersPage: React.FC = () => {
     };
 
     fetchOrders();
-  }, [page, limit]);
+  }, [page, limit, setTotalCount]);
 
   const getStatusVariant = (status: string) => {
     switch (status) {

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ShoppingBag, Trash2, ArrowRight, Truck, Sparkles } from 'lucide-react';
+import { X, ShoppingBag, Trash2, ArrowRight, Truck } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { Button } from '../ui/Button';
 import { resolveImageUrl } from '../../utils/imageUrl';

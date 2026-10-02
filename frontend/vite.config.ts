@@ -7,6 +7,10 @@ export default defineConfig({
   server: {
     host: true, // Listen on all network interfaces (0.0.0.0) for LAN access
     proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
       '/uploads': {
         target: 'http://localhost:3000',
         changeOrigin: true,

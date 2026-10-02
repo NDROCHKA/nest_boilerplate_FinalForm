@@ -19,22 +19,41 @@ export class ProductSeedService {
   async run(): Promise<boolean> {
     let created = false;
 
-    const oversizedTees = await this.categoryRepository.findOne({ where: { name: 'Oversized T-Shirts' } });
-    const regularTees = await this.categoryRepository.findOne({ where: { name: 'Regular Fit T-Shirts' } });
-    const hoodiesOuterwear = await this.categoryRepository.findOne({ where: { name: 'Hoodies & Outerwear' } });
-    const tshirts = await this.categoryRepository.findOne({ where: { name: 'T-Shirts' } });
-    const jackets = await this.categoryRepository.findOne({ where: { name: 'Jackets' } });
-    const pants = await this.categoryRepository.findOne({ where: { name: 'Pants' } });
-    const shoes = await this.categoryRepository.findOne({ where: { name: 'Shoes' } });
-    const accessories = await this.categoryRepository.findOne({ where: { name: 'Accessories' } });
-    const activewear = await this.categoryRepository.findOne({ where: { name: 'Activewear' } });
+    const oversizedTees = await this.categoryRepository.findOne({
+      where: { name: 'Oversized T-Shirts' },
+    });
+    const regularTees = await this.categoryRepository.findOne({
+      where: { name: 'Regular Fit T-Shirts' },
+    });
+    const hoodiesOuterwear = await this.categoryRepository.findOne({
+      where: { name: 'Hoodies & Outerwear' },
+    });
+    const tshirts = await this.categoryRepository.findOne({
+      where: { name: 'T-Shirts' },
+    });
+    const jackets = await this.categoryRepository.findOne({
+      where: { name: 'Jackets' },
+    });
+    const pants = await this.categoryRepository.findOne({
+      where: { name: 'Pants' },
+    });
+    const shoes = await this.categoryRepository.findOne({
+      where: { name: 'Shoes' },
+    });
+    const accessories = await this.categoryRepository.findOne({
+      where: { name: 'Accessories' },
+    });
+    const activewear = await this.categoryRepository.findOne({
+      where: { name: 'Activewear' },
+    });
 
     const productsList = [
       // ── OVERSIZED T-SHIRTS ──
       {
         name: 'Crown & Thorn Oversized Heavyweight Tee',
-        description: '500GSM ultra-heavyweight combed cotton with drop-shoulder streetwear cut, vintage garment wash, and embroidered crown of thorns.',
-        price: 45.00,
+        description:
+          '500GSM ultra-heavyweight combed cotton with drop-shoulder streetwear cut, vintage garment wash, and embroidered crown of thorns.',
+        price: 45.0,
         discountPercent: 10,
         sizes: ['S', 'M', 'L', 'XL', 'XXL'],
         colors: ['Washed Black', 'Vintage Olive', 'Off-White'],
@@ -48,8 +67,9 @@ export class ProductSeedService {
       },
       {
         name: 'Crusader Emblem Boxy Fit Tee',
-        description: 'Boxy oversized fit featuring high-density puff print emblem on back and thick 1.25" rib collar.',
-        price: 48.00,
+        description:
+          'Boxy oversized fit featuring high-density puff print emblem on back and thick 1.25" rib collar.',
+        price: 48.0,
         discountPercent: null,
         sizes: ['M', 'L', 'XL', 'XXL'],
         colors: ['Parchment White', 'Charcoal Smoke'],
@@ -62,8 +82,9 @@ export class ProductSeedService {
       },
       {
         name: 'Faith & Valor Heavy Cotton Oversized Tee',
-        description: 'Pre-shrunk 100% organic cotton oversized tee with reinforced twin needle stitching and dropped shoulders.',
-        price: 42.00,
+        description:
+          'Pre-shrunk 100% organic cotton oversized tee with reinforced twin needle stitching and dropped shoulders.',
+        price: 42.0,
         discountPercent: 15,
         sizes: ['S', 'M', 'L', 'XL'],
         colors: ['Raw Ochre', 'Deep Maroon', 'Pitch Black'],
@@ -78,8 +99,9 @@ export class ProductSeedService {
       // ── REGULAR FIT T-SHIRTS ──
       {
         name: 'Signature Cedar Crest Athletic Tee',
-        description: 'Classic tailored athletic fit tee in ring-spun combed cotton with soft-hand Cedar silhouette chest print.',
-        price: 34.00,
+        description:
+          'Classic tailored athletic fit tee in ring-spun combed cotton with soft-hand Cedar silhouette chest print.',
+        price: 34.0,
         discountPercent: null,
         sizes: ['S', 'M', 'L', 'XL'],
         colors: ['White', 'Navy Blue', 'Forest Green'],
@@ -92,8 +114,9 @@ export class ProductSeedService {
       },
       {
         name: 'Crusader Core Crewneck Tee',
-        description: 'Essential daily wear cotton crewneck tee with true-to-size cut and side-seam construction.',
-        price: 32.00,
+        description:
+          'Essential daily wear cotton crewneck tee with true-to-size cut and side-seam construction.',
+        price: 32.0,
         discountPercent: 10,
         sizes: ['S', 'M', 'L', 'XL', 'XXL'],
         colors: ['Pure White', 'Heather Gray', 'Midnight Black'],
@@ -108,8 +131,9 @@ export class ProductSeedService {
       // ── HOODIES & OUTERWEAR ──
       {
         name: 'Armor of Faith Heavyweight Fleece Hoodie',
-        description: '480GSM French Terry heavyweight fleece pullover hoodie with double-lined hood, hidden phone pouch, and high-density chest embroidery.',
-        price: 78.00,
+        description:
+          '480GSM French Terry heavyweight fleece pullover hoodie with double-lined hood, hidden phone pouch, and high-density chest embroidery.',
+        price: 78.0,
         discountPercent: 10,
         sizes: ['S', 'M', 'L', 'XL', 'XXL'],
         colors: ['Washed Charcoal', 'Crimson Red', 'Olive Green'],
@@ -123,8 +147,9 @@ export class ProductSeedService {
       },
       {
         name: 'Crusader Fortress Zip-Up Fleece Hoodie',
-        description: 'Heavyweight full-zip fleece hoodie equipped with custom gunmetal hardware, deep kangaroo pockets, and fleece-lined hood.',
-        price: 85.00,
+        description:
+          'Heavyweight full-zip fleece hoodie equipped with custom gunmetal hardware, deep kangaroo pockets, and fleece-lined hood.',
+        price: 85.0,
         discountPercent: 15,
         sizes: ['M', 'L', 'XL', 'XXL'],
         colors: ['Jet Black', 'Heather Gray'],
@@ -137,7 +162,8 @@ export class ProductSeedService {
       },
       {
         name: 'Urban Street Flight Bomber Jacket',
-        description: 'Insulated nylon flight bomber jacket equipped with utility arm pocket, heavy-duty metal zippers, and ribbed waist cuffs.',
+        description:
+          'Insulated nylon flight bomber jacket equipped with utility arm pocket, heavy-duty metal zippers, and ribbed waist cuffs.',
         price: 129.99,
         discountPercent: 20,
         sizes: ['S', 'M', 'L', 'XL'],
@@ -153,7 +179,8 @@ export class ProductSeedService {
       // ── PANTS, SHOES & ACCESSORIES ──
       {
         name: 'Tactical Multi-Pocket Cargo Pants',
-        description: 'Reinforced ripstop cotton cargo pants with expandable flap pockets and cinchable ankle cuffs.',
+        description:
+          'Reinforced ripstop cotton cargo pants with expandable flap pockets and cinchable ankle cuffs.',
         price: 74.99,
         discountPercent: 25,
         sizes: ['30', '32', '34', '36'],
@@ -167,7 +194,8 @@ export class ProductSeedService {
       },
       {
         name: 'Pro Runner Air Cushion Sneakers',
-        description: 'Engineered mesh athletic running shoes featuring high-rebound air cushioning and non-slip rubber traction sole.',
+        description:
+          'Engineered mesh athletic running shoes featuring high-rebound air cushioning and non-slip rubber traction sole.',
         price: 139.99,
         discountPercent: 15,
         sizes: ['40', '41', '42', '43', '44'],
@@ -181,8 +209,9 @@ export class ProductSeedService {
       },
       {
         name: 'Chronograph Matte Black Timepiece',
-        description: 'Precision Japanese quartz movement timepiece with scratch-resistant sapphire glass and stainless steel mesh strap.',
-        price: 189.00,
+        description:
+          'Precision Japanese quartz movement timepiece with scratch-resistant sapphire glass and stainless steel mesh strap.',
+        price: 189.0,
         discountPercent: 20,
         sizes: ['One Size'],
         colors: ['Matte Black', 'Silver Stainless'],
@@ -210,8 +239,13 @@ export class ProductSeedService {
             this.productRepository.create(productData),
           );
           created = true;
-        } catch (error: any) {
-          if (error?.code === '23505') {
+        } catch (error: unknown) {
+          if (
+            typeof error === 'object' &&
+            error !== null &&
+            'code' in error &&
+            error.code === '23505'
+          ) {
             continue;
           }
           throw error;

@@ -35,7 +35,21 @@ export class ProductMapper {
     return product;
   }
 
-  static toPersistence(product: Product): ProductEntity {
+  static toPersistence(
+    product: Pick<
+      Product,
+      | 'name'
+      | 'description'
+      | 'price'
+      | 'discountPercent'
+      | 'sizes'
+      | 'colors'
+      | 'stock'
+      | 'isActive'
+      | 'categoryId'
+    > &
+      Partial<Pick<Product, 'id'>>,
+  ): ProductEntity {
     const entity = new ProductEntity();
 
     if (product.id !== undefined) {

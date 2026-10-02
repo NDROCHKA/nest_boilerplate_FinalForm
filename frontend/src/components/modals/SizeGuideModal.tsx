@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Ruler, Sparkles, Info, Check } from 'lucide-react';
+import { X, Ruler, Info } from 'lucide-react';
 import { SIZE_CHARTS, FitCategoryKey, cmToInches } from '../../utils/sizeCharts';
 import { Button } from '../ui/Button';
 

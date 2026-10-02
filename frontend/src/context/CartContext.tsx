@@ -66,7 +66,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 
     const imageUrl = product.images && product.images.length > 0
-      ? product.images.sort((a, b) => a.sortOrder - b.sortOrder)[0].url
+      ? [...product.images].sort((a, b) => a.sortOrder - b.sortOrder)[0].url
       : null;
 
     if (existingIndex > -1) {

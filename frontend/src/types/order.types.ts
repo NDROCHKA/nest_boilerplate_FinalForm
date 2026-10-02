@@ -22,6 +22,7 @@ export interface OrderItem {
 export interface Order {
   id: number;
   userId: number;
+  clientOrderId: string;
   items?: OrderItem[];
   totalAmount: number;
   status: OrderStatusEnum;
@@ -40,6 +41,7 @@ export interface CreateOrderItemDto {
 }
 
 export interface CreateOrderDto {
+  clientOrderId: string;
   items: CreateOrderItemDto[];
   shippingAddress: string;
   phoneNumber: string;

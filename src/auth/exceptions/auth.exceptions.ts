@@ -12,6 +12,16 @@ class AuthException extends BaseCustomException {
   }
 }
 
+export class AuthInvalidCredentials extends AuthException {
+  constructor() {
+    super(
+      'AUTH_INVALID_CREDENTIALS',
+      'The email or password is incorrect.',
+      HttpStatus.UNAUTHORIZED,
+    );
+  }
+}
+
 export class AuthIncorrectPassword extends AuthException {
   constructor(details?: Record<string, unknown>) {
     super(

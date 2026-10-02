@@ -27,9 +27,7 @@ export interface CreateUserDto {
 }
 
 export interface UpdateUserDto {
-  email?: string;
   phoneNumber?: string;
-  password?: string;
   firstName?: string;
   lastName?: string;
   profilePicture?: string | null;

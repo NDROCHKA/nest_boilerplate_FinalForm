@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Check, FolderTree, Upload, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Check, Upload } from 'lucide-react';
 import { categoryAdminApi } from '../../../api/category-admin.api';
 import { fileApi } from '../../../api/file.api';
 import { useToast } from '../../../context/ToastContext';
@@ -43,7 +43,7 @@ export const CategoryFormPage: React.FC = () => {
     };
 
     loadCategory();
-  }, [id]);
+  }, [id, isEdit, navigate, showToast]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

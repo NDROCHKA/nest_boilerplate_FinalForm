@@ -10,6 +10,9 @@ export class Order {
   userId: number;
 
   @Expose()
+  clientOrderId: string;
+
+  @Expose()
   items?: OrderItem[];
 
   @Expose()

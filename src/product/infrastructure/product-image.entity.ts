@@ -3,14 +3,16 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ProductEntity } from './product.entity';
 
 @Entity({ name: 'product_image' })
+@Index('IDX_product_image_product_sort', ['productId', 'sortOrder'])
 export class ProductImageEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ primaryKeyConstraintName: 'PK_product_image' })
   id: number;
 
   @Column({ type: 'varchar' })
@@ -22,7 +24,10 @@ export class ProductImageEntity {
   @ManyToOne(() => ProductEntity, (product) => product.images, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'productId' })
+  @JoinColumn({
+    name: 'productId',
+    foreignKeyConstraintName: 'FK_product_image_product',
+  })
   product: ProductEntity;
 
   @Column({ type: 'integer' })

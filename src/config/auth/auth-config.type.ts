@@ -1,10 +1,10 @@
+export type AuthDuration = `${number}${'s' | 'm' | 'h' | 'd'}`;
+
 export type AuthConfig = {
-  secret?: string;
-  expires?: string;
-  refreshSecret?: string;
-  refreshExpires?: string;
-  forgotSecret?: string;
-  forgotExpires?: string;
-  confirmEmailSecret?: string;
-  confirmEmailExpires?: string;
+  secret: string;
+  expires: AuthDuration;
+  refreshSecret: string;
+  refreshExpires: AuthDuration;
+  issuer: string;
+  audience: string;
 };

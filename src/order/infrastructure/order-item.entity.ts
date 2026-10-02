@@ -1,7 +1,9 @@
 import {
   Column,
+  Check,
   Entity,
   JoinColumn,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -9,21 +11,35 @@ import { OrderEntity } from './order.entity';
 import { ProductEntity } from '../../product/infrastructure/product.entity';
 
 @Entity({ name: 'order_item' })
+@Check('CHK_order_item_quantity_positive', '"quantity" > 0')
+@Check('CHK_order_item_price_nonnegative', '"priceAtPurchase" >= 0')
+@Check(
+  'CHK_order_item_discount_range',
+  '"discountPercentAtPurchase" IS NULL OR "discountPercentAtPurchase" BETWEEN 0 AND 100',
+)
+@Index('IDX_order_item_order', ['orderId'])
+@Index('IDX_order_item_product', ['productId'])
 export class OrderItemEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ primaryKeyConstraintName: 'PK_order_item' })
   id: number;
 
   @ManyToOne(() => OrderEntity, (order) => order.items, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'orderId' })
+  @JoinColumn({
+    name: 'orderId',
+    foreignKeyConstraintName: 'FK_order_item_order',
+  })
   order: OrderEntity;
 
   @Column({ type: 'integer' })
   orderId: number;
 
   @ManyToOne(() => ProductEntity, { nullable: false, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'productId' })
+  @JoinColumn({
+    name: 'productId',
+    foreignKeyConstraintName: 'FK_order_item_product',
+  })
   product: ProductEntity;
 
   @Column({ type: 'integer' })

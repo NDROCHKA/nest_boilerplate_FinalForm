@@ -20,6 +20,8 @@ import {
 } from '../product/exceptions/product.exceptions';
 import { QueryRunner } from 'typeorm';
 
+export const ORDER_SHIPPING_FEE = 4;
+
 @Injectable()
 export class OrderService {
   private readonly logger = new Logger(OrderService.name);
@@ -50,6 +52,21 @@ export class OrderService {
     createOrderDto: CreateOrderDto;
     queryRunner?: QueryRunner;
   }): Promise<Order> {
+    await this.orderRepository.acquireIdempotencyLock(
+      userId,
+      createOrderDto.clientOrderId,
+      queryRunner,
+    );
+
+    const existingOrder = await this.orderRepository.findByClientOrderId({
+      userId,
+      clientOrderId: createOrderDto.clientOrderId,
+      queryRunner,
+    });
+    if (existingOrder) {
+      return existingOrder;
+    }
+
     const orderItems: Array<{
       productId: number;
       quantity: number;
@@ -59,7 +76,7 @@ export class OrderService {
       discountPercentAtPurchase: number | null;
     }> = [];
 
-    let totalAmount = 0;
+    let subtotalInCents = 0;
 
     // Validate each item
     for (const item of createOrderDto.items) {
@@ -117,7 +134,7 @@ export class OrderService {
           : +product.price;
 
       // Add to total
-      totalAmount += effectivePrice * item.quantity;
+      subtotalInCents += Math.round(effectivePrice * 100) * item.quantity;
 
       orderItems.push({
         productId: item.productId,
@@ -131,17 +148,26 @@ export class OrderService {
 
     // Decrement stock for all items
     for (const item of createOrderDto.items) {
-      await this.productRepository.decrementStock(
-        item.productId,
-        item.quantity,
-        queryRunner,
-      );
+      const decremented =
+        await this.productRepository.decrementStockIfAvailable(
+          item.productId,
+          item.quantity,
+          queryRunner,
+        );
+
+      if (!decremented) {
+        throw new ProductOutOfStockException({
+          productId: item.productId,
+          requested: item.quantity,
+        });
+      }
     }
 
     // Create the order
     return this.orderRepository.create({
       userId,
-      totalAmount: +totalAmount.toFixed(2),
+      clientOrderId: createOrderDto.clientOrderId,
+      totalAmount: subtotalInCents / 100 + ORDER_SHIPPING_FEE,
       shippingAddress: createOrderDto.shippingAddress,
       phoneNumber: createOrderDto.phoneNumber,
       items: orderItems,
@@ -232,19 +258,13 @@ export class OrderService {
     const validTransitions: Record<string, OrderStatusEnum[]> = {
       [OrderStatusEnum.pending]: [
         OrderStatusEnum.confirmed,
-        OrderStatusEnum.shipped,
-        OrderStatusEnum.delivered,
         OrderStatusEnum.cancelled,
       ],
       [OrderStatusEnum.confirmed]: [
         OrderStatusEnum.shipped,
-        OrderStatusEnum.delivered,
         OrderStatusEnum.cancelled,
       ],
-      [OrderStatusEnum.shipped]: [
-        OrderStatusEnum.delivered,
-        OrderStatusEnum.cancelled,
-      ],
+      [OrderStatusEnum.shipped]: [OrderStatusEnum.delivered],
       [OrderStatusEnum.delivered]: [], // Terminal state
       [OrderStatusEnum.cancelled]: [], // Terminal state
     };
@@ -261,6 +281,7 @@ export class OrderService {
     const updated = await this.orderRepository.updateStatus(
       id,
       status,
+      order.status,
       queryRunner,
     );
 
@@ -268,17 +289,20 @@ export class OrderService {
       throw new OrderNotFoundException({ id });
     }
 
-    // Trigger email notifications asynchronously
-    this.sendNotificationEmail(updated.id, status).catch((err) => {
-      this.logger.error(
-        `Failed sending notification email for order #${id}: ${err instanceof Error ? err.message : err}`,
-      );
-    });
+    if (status === OrderStatusEnum.cancelled) {
+      for (const item of order.items ?? []) {
+        await this.productRepository.incrementStock(
+          item.productId,
+          item.quantity,
+          queryRunner,
+        );
+      }
+    }
 
     return updated;
   }
 
-  private async sendNotificationEmail(
+  async sendStatusNotification(
     orderId: number,
     status: OrderStatusEnum,
   ): Promise<void> {

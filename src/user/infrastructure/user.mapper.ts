@@ -21,11 +21,24 @@ export class UserMapper {
     return user;
   }
 
-  static toPersistence(user: User): UserEntity {
+  static toPersistence(
+    user: Pick<
+      User,
+      | 'email'
+      | 'phoneNumber'
+      | 'password'
+      | 'firstName'
+      | 'lastName'
+      | 'profilePicture'
+      | 'emailVerified'
+      | 'role'
+    > &
+      Partial<Pick<User, 'id'>>,
+  ): UserEntity {
     const entity = new UserEntity();
 
     if (user.id !== undefined) {
-      entity.id = user.id as number;
+      entity.id = user.id;
     }
 
     entity.email = user.email;

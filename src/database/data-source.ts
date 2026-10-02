@@ -4,7 +4,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 const prefix = process.env.NODE_ENV === 'test' ? 'TEST_' : '';
 
 export const AppDataSource = new DataSource({
-  type: process.env[`${prefix}DATABASE_TYPE`] as any,
+  type: 'postgres',
   url: process.env[`${prefix}DATABASE_URL`],
   host: process.env[`${prefix}DATABASE_HOST`],
   port: process.env[`${prefix}DATABASE_PORT`]
@@ -15,7 +15,6 @@ export const AppDataSource = new DataSource({
   database: process.env[`${prefix}DATABASE_NAME`],
   synchronize: process.env[`${prefix}DATABASE_SYNCHRONIZE`] === 'true',
   dropSchema: false,
-  keepConnectionAlive: true,
   logging: process.env.NODE_ENV !== 'production',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/migrations/**/*{.ts,.js}'],

@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Home, LayoutGrid, ShoppingBag, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -7,7 +7,6 @@ import { useCart } from '../../context/CartContext';
 export const MobileBottomNav: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { totalItems, openCart } = useCart();
-  const location = useLocation();
 
   return (
     <div

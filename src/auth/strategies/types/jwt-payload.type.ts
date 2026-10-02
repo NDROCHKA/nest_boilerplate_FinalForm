@@ -3,6 +3,7 @@ import { RoleEnum } from '../../../utils/enums/roles.enum';
 
 export type JwtPayloadType = Pick<User, 'id' | 'email'> & {
   role?: RoleEnum | null;
+  tokenUse: 'access';
   iat: number;
   exp: number;
 };

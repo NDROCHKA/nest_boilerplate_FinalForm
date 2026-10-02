@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, ShieldAlert, Calendar, DollarSign, Filter } from 'lucide-react';
+import { Eye, Filter } from 'lucide-react';
 import { orderAdminApi } from '../../../api/order-admin.api';
 import { Order, OrderStatusEnum } from '../../../types/order.types';
 import { usePagination } from '../../../hooks/usePagination';
@@ -20,7 +20,6 @@ export const OrdersListPage: React.FC = () => {
   const {
     page,
     limit,
-    totalCount,
     totalPages,
     hasNextPage,
     hasPrevPage,
@@ -31,7 +30,7 @@ export const OrdersListPage: React.FC = () => {
     resetPagination,
   } = usePagination(10);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await orderAdminApi.getAll({
@@ -47,15 +46,15 @@ export const OrdersListPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [limit, page, setTotalCount, showToast, statusFilter]);
 
   useEffect(() => {
     resetPagination();
-  }, [statusFilter]);
+  }, [resetPagination, statusFilter]);
 
   useEffect(() => {
     fetchOrders();
-  }, [page, limit, statusFilter]);
+  }, [fetchOrders]);
 
   const getStatusVariant = (status: string) => {
     switch (status) {
