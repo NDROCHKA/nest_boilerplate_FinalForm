@@ -51,6 +51,10 @@ export class UserEntity {
   @Column({ type: 'boolean', default: false })
   emailVerified: boolean;
 
+  @Column({ type: 'integer', default: 0 })
+  @Exclude({ toPlainOnly: true })
+  tokenVersion: number;
+
   @Column({ type: 'integer', nullable: false })
   role: RoleEnum;
 

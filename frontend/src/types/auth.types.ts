@@ -30,3 +30,23 @@ export interface VerifyOtpDto {
 export interface ResendOtpDto {
   email: string;
 }
+
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface VerifyPasswordResetOtpDto {
+  email: string;
+  otpCode: string;
+}
+
+export interface VerifyPasswordResetOtpResponse {
+  resetToken: string;
+  expiresInSeconds: number;
+}
+
+export interface ResetPasswordDto {
+  email: string;
+  resetToken: string;
+  newPassword: string;
+}

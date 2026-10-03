@@ -109,3 +109,14 @@ export class AuthOtpResendTooSoon extends AuthException {
     );
   }
 }
+
+export class AuthPasswordResetInvalid extends AuthException {
+  constructor(details?: Record<string, unknown>) {
+    super(
+      'AUTH_PASSWORD_RESET_INVALID',
+      'This password reset session is invalid or expired. Please request a new code.',
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      details,
+    );
+  }
+}

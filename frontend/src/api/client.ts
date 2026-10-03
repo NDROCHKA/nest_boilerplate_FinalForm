@@ -33,11 +33,31 @@ const processQueue = (error: any, token: string | null = null) => {
 const normalizeError = async (response: Response): Promise<ApiError> => {
   try {
     const errorData = await response.json();
+    if (response.status === 429) {
+      return {
+        statusCode: 429,
+        errorCode: errorData.errorCode || 'RATE_LIMIT_EXCEEDED',
+        message:
+          errorData.errorCode === 'AUTH_OTP_TOO_MANY_ATTEMPTS'
+            ? errorData.message
+            : 'Too many attempts. Please wait a moment and try again.',
+        details: errorData.details || undefined,
+      };
+    }
+    const validationDetails =
+      errorData.details ||
+      (errorData.errors ? { fields: errorData.errors } : undefined);
     return {
       statusCode: errorData.statusCode || response.status,
-      errorCode: errorData.errorCode || 'HTTP_ERROR',
-      message: errorData.message || response.statusText || 'An unexpected error occurred.',
-      details: errorData.details || undefined,
+      errorCode:
+        errorData.errorCode ||
+        (errorData.errors ? 'VALIDATION_FAILED' : 'HTTP_ERROR'),
+      message:
+        errorData.message ||
+        (errorData.errors
+          ? 'Please correct the highlighted fields and try again.'
+          : response.statusText || 'An unexpected error occurred.'),
+      details: validationDetails,
     };
   } catch {
     return {
@@ -75,7 +95,11 @@ const parseSuccessResponse = async <T>(response: Response): Promise<T> => {
   return bodyJson as T;
 };
 
-const refreshTokenRequest = async (): Promise<{ token: string; refreshToken: string; tokenExpires: number }> => {
+const refreshTokenRequest = async (): Promise<{
+  token: string;
+  refreshToken: string;
+  tokenExpires: number;
+}> => {
   const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
   if (!storedRefreshToken) {
     throw new Error('No refresh token available');
@@ -91,11 +115,18 @@ const refreshTokenRequest = async (): Promise<{ token: string; refreshToken: str
     throw await normalizeError(response);
   }
 
-  const result: ApiResponse<{ token: string; refreshToken: string; tokenExpires: number }> = await response.json();
+  const result: ApiResponse<{
+    token: string;
+    refreshToken: string;
+    tokenExpires: number;
+  }> = await response.json();
   return result.data;
 };
 
-export const client = async <T>(endpoint: string, options: RequestOptions = {}): Promise<T> => {
+export const client = async <T>(
+  endpoint: string,
+  options: RequestOptions = {},
+): Promise<T> => {
   const { params, headers: customHeaders, body, ...restOptions } = options;
 
   // Build headers
@@ -134,7 +165,10 @@ export const client = async <T>(endpoint: string, options: RequestOptions = {}):
   try {
     const response = await fetch(url, fetchOptions);
 
-    if (response.status === 401 && !endpoint.replace(/^\//, '').startsWith('auth/')) {
+    if (
+      response.status === 401 &&
+      !endpoint.replace(/^\//, '').startsWith('auth/')
+    ) {
       let newToken: string;
 
       if (!isRefreshing) {
@@ -142,9 +176,15 @@ export const client = async <T>(endpoint: string, options: RequestOptions = {}):
         try {
           const newTokens = await refreshTokenRequest();
           localStorage.setItem(STORAGE_KEYS.TOKEN, newTokens.token);
-          localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newTokens.refreshToken);
-          localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRES, String(newTokens.tokenExpires));
-          
+          localStorage.setItem(
+            STORAGE_KEYS.REFRESH_TOKEN,
+            newTokens.refreshToken,
+          );
+          localStorage.setItem(
+            STORAGE_KEYS.TOKEN_EXPIRES,
+            String(newTokens.tokenExpires),
+          );
+
           processQueue(null, newTokens.token);
           newToken = newTokens.token;
         } catch (refreshErr) {
@@ -194,14 +234,17 @@ export const client = async <T>(endpoint: string, options: RequestOptions = {}):
 };
 
 // Convenience methods
-client.get = <T>(endpoint: string, params?: Record<string, string | number | boolean | undefined>, options?: RequestOptions) => 
-  client<T>(endpoint, { method: 'GET', params, ...options });
+client.get = <T>(
+  endpoint: string,
+  params?: Record<string, string | number | boolean | undefined>,
+  options?: RequestOptions,
+) => client<T>(endpoint, { method: 'GET', params, ...options });
 
-client.post = <T>(endpoint: string, body?: any, options?: RequestOptions) => 
+client.post = <T>(endpoint: string, body?: any, options?: RequestOptions) =>
   client<T>(endpoint, { method: 'POST', body, ...options });
 
-client.patch = <T>(endpoint: string, body?: any, options?: RequestOptions) => 
+client.patch = <T>(endpoint: string, body?: any, options?: RequestOptions) =>
   client<T>(endpoint, { method: 'PATCH', body, ...options });
 
-client.delete = <T>(endpoint: string, options?: RequestOptions) => 
+client.delete = <T>(endpoint: string, options?: RequestOptions) =>
   client<T>(endpoint, { method: 'DELETE', ...options });

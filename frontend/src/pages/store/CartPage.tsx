@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { Button } from '../../components/ui/Button';
@@ -8,6 +8,7 @@ import { ORDER_SHIPPING_FEE } from '../../utils/constants';
 
 export const CartPage: React.FC = () => {
   const { items, updateQuantity, removeItem, totalAmount } = useCart();
+  const navigate = useNavigate();
 
   if (items.length === 0) {
     return (
@@ -17,11 +18,9 @@ export const CartPage: React.FC = () => {
           description="Looks like you haven't added any products to your shopping cart yet."
           icon={<ShoppingBag size={48} />}
           action={
-            <Link to="/products">
-              <Button variant="primary">
-                <ArrowLeft size={16} />
-                Continue Shopping
-              </Button>
+            <Link to="/products" className="btn btn-primary">
+              <ArrowLeft size={16} />
+              Continue Shopping
             </Link>
           }
         />
@@ -163,12 +162,14 @@ export const CartPage: React.FC = () => {
             <span style={{ color: 'var(--color-accent)' }}>${orderTotal.toFixed(2)}</span>
           </div>
 
-          <Link to="/checkout" style={{ width: '100%', marginTop: '0.5rem' }}>
-            <Button variant="primary" style={{ width: '100%', height: '3rem', gap: '0.5rem' }}>
-              Proceed to Checkout
-              <ArrowRight size={18} />
-            </Button>
-          </Link>
+          <Button
+            variant="primary"
+            onClick={() => navigate('/checkout')}
+            style={{ width: '100%', height: '3rem', gap: '0.5rem', marginTop: '0.5rem' }}
+          >
+            Proceed to Checkout
+            <ArrowRight size={18} />
+          </Button>
         </div>
       </div>
     </div>

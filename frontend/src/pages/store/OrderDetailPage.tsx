@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, ShieldAlert, Truck, CreditCard, Phone, MapPin } from 'lucide-react';
 import { orderApi } from '../../api/order.api';
 import { Order } from '../../types/order.types';
-import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Spinner } from '../../components/ui/Spinner';
 import { ORDER_SHIPPING_FEE } from '../../utils/constants';
@@ -37,7 +36,6 @@ export const OrderDetailPage: React.FC = () => {
     switch (status) {
       case 'pending': return 'warning';
       case 'confirmed': return 'info';
-      case 'shipped': return 'info';
       case 'delivered': return 'success';
       case 'cancelled': return 'danger';
       default: return 'muted';
@@ -58,8 +56,8 @@ export const OrderDetailPage: React.FC = () => {
         <ShieldAlert size={48} style={{ color: 'var(--color-danger)', marginBottom: '1rem' }} />
         <h2>Order Not Found</h2>
         <p style={{ margin: '0.5rem 0 1.5rem 0' }}>{errorMsg || 'We could not find the order details you requested.'}</p>
-        <Link to="/my-orders">
-          <Button variant="secondary">Back to My Orders</Button>
+        <Link to="/my-orders" className="btn btn-secondary">
+          Back to My Orders
         </Link>
       </div>
     );
@@ -117,16 +115,16 @@ export const OrderDetailPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '1rem',
-          border: order.status === 'confirmed' || order.status === 'shipped' ? '1px solid var(--color-info)' : '1px solid var(--color-border)',
-          background: order.status === 'confirmed' || order.status === 'shipped' ? 'var(--color-info-bg)' : 'var(--color-bg-secondary)',
+          border: order.status === 'confirmed' ? '1px solid var(--color-info)' : '1px solid var(--color-border)',
+          background: order.status === 'confirmed' ? 'var(--color-info-bg)' : 'var(--color-bg-secondary)',
           borderRadius: 'var(--radius-md)',
         }}
       >
-        <Truck size={24} style={{ color: order.status === 'confirmed' || order.status === 'shipped' ? 'var(--color-info)' : 'var(--color-text-secondary)', flexShrink: 0 }} />
+        <Truck size={24} style={{ color: order.status === 'confirmed' ? 'var(--color-info)' : 'var(--color-text-secondary)', flexShrink: 0 }} />
         <div>
           <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>
-            {order.status === 'confirmed' || order.status === 'shipped'
-              ? 'Order Confirmed & Out for Delivery'
+            {order.status === 'confirmed'
+              ? 'Order Confirmed'
               : order.status === 'delivered'
               ? 'Order Delivered'
               : order.status === 'cancelled'
@@ -134,8 +132,8 @@ export const OrderDetailPage: React.FC = () => {
               : 'Order Pending Confirmation'}
           </h4>
           <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
-            {order.status === 'confirmed' || order.status === 'shipped'
-              ? 'Your order has been confirmed! Your items are currently being shipped and delivered to your address (4-7 days).'
+            {order.status === 'confirmed'
+              ? 'Your order has been confirmed and is being prepared for delivery to your address (4-7 days).'
               : order.status === 'delivered'
               ? 'Your package has been successfully delivered. Enjoy your Crusader gear!'
               : order.status === 'cancelled'

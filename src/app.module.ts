@@ -16,7 +16,8 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { MailModule } from './mail/mail.module';
 import { FileModule } from './file/file.module';
 import { HealthController } from './health/health.controller';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { AppThrottlerGuard } from './utils/guards/app-throttler.guard';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -50,7 +51,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: AppThrottlerGuard,
     },
   ],
   exports: [],

@@ -1,5 +1,14 @@
 import { client } from './client';
-import { AuthEmailLoginDto, LoginResponse, VerifyOtpDto, ResendOtpDto } from '../types/auth.types';
+import {
+  AuthEmailLoginDto,
+  ForgotPasswordDto,
+  LoginResponse,
+  ResendOtpDto,
+  ResetPasswordDto,
+  VerifyOtpDto,
+  VerifyPasswordResetOtpDto,
+  VerifyPasswordResetOtpResponse,
+} from '../types/auth.types';
 import { CreateUserDto } from '../types/user.types';
 
 export const authApi = {
@@ -14,5 +23,19 @@ export const authApi = {
   },
   resendOtp: (data: ResendOtpDto): Promise<{ message: string }> => {
     return client.post<{ message: string }>('auth/email/resend-otp', data);
+  },
+  forgotPassword: (data: ForgotPasswordDto): Promise<{ message: string }> => {
+    return client.post<{ message: string }>('auth/email/forgot-password', data);
+  },
+  verifyPasswordResetOtp: (
+    data: VerifyPasswordResetOtpDto,
+  ): Promise<VerifyPasswordResetOtpResponse> => {
+    return client.post<VerifyPasswordResetOtpResponse>(
+      'auth/email/verify-password-reset-otp',
+      data,
+    );
+  },
+  resetPassword: (data: ResetPasswordDto): Promise<{ message: string }> => {
+    return client.post<{ message: string }>('auth/email/reset-password', data);
   },
 };

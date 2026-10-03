@@ -179,7 +179,7 @@ export const CategoryFormPage: React.FC = () => {
                 {isUploading ? 'Uploading...' : 'Upload File'}
                 <input
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
                   onChange={handleFileUpload}
                   disabled={isUploading || isSubmitting}
                   style={{ display: 'none' }}
@@ -220,11 +220,13 @@ export const CategoryFormPage: React.FC = () => {
 
           {/* Action Area */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-            <Link to="/admin/categories">
-              <Button variant="secondary" disabled={isSubmitting}>
-                Cancel
-              </Button>
-            </Link>
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/admin/categories')}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
             <Button type="submit" variant="primary" isLoading={isSubmitting} style={{ minWidth: '150px' }}>
               <Check size={16} />
               {isEdit ? 'Update Category' : 'Save Category'}

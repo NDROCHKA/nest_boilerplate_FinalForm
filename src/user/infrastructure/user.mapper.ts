@@ -13,6 +13,7 @@ export class UserMapper {
     user.lastName = entity.lastName;
     user.profilePicture = entity.profilePicture;
     user.emailVerified = entity.emailVerified ?? false;
+    user.tokenVersion = entity.tokenVersion ?? 0;
     user.role = entity.role ?? null;
     user.createdAt = entity.createdAt;
     user.updatedAt = entity.updatedAt;
@@ -31,6 +32,7 @@ export class UserMapper {
       | 'lastName'
       | 'profilePicture'
       | 'emailVerified'
+      | 'tokenVersion'
       | 'role'
     > &
       Partial<Pick<User, 'id'>>,
@@ -48,6 +50,7 @@ export class UserMapper {
     entity.lastName = user.lastName;
     entity.profilePicture = user.profilePicture;
     entity.emailVerified = user.emailVerified ?? false;
+    entity.tokenVersion = user.tokenVersion ?? 0;
     entity.role = user.role;
 
     return entity;

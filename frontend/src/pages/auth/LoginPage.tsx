@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Input } from '../../components/ui/Input';
@@ -12,8 +12,18 @@ export const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [email, setEmail] = useState('');
+  const locationState = location.state as {
+      returnTo?: { pathname?: string; search?: string; hash?: string };
+      email?: string;
+    } | null;
+  const returnLocation = locationState?.returnTo;
+  const returnTo = returnLocation?.pathname
+    ? `${returnLocation.pathname}${returnLocation.search ?? ''}${returnLocation.hash ?? ''}`
+    : '/';
+
+  const [email, setEmail] = useState(locationState?.email ?? '');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -40,24 +50,14 @@ export const LoginPage: React.FC = () => {
     try {
       await login({ email, password });
       showToast('Logged in successfully', 'success');
-      
-      // Determine redirection based on role
-      // After login, useAuth state updates. Let's check token and navigate
-      // Simple parse JWT to check role directly, or navigate to / and let guards sort it out.
-      // Wait, we can fetch user role directly after successful login call
-      // Let's redirect to check role or let auth provider load it.
-      // Actually, since login sets user state, we can inspect it or redirect to /
-      // Admin dashboard can be visited by clicking "Admin panel" if user is admin
-      // Let's redirect to / (Home page) or check role.
-      // If we parse the token, we can see if it's superAdmin.
-      // Better yet: we just redirect to / to let user choose, or redirect to /admin if they are admin.
-      // Let's redirect to / first.
-      navigate('/');
+      navigate(returnTo, { replace: true });
     } catch (err: any) {
       console.error(err);
       if (err.errorCode === 'AUTH_EMAIL_NOT_VERIFIED') {
         showToast('Please verify your email address first.', 'info');
-        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`, {
+          state: { password, returnTo: returnLocation },
+        });
       } else {
         showToast(err.message || 'Login failed. Please check credentials.', 'error');
       }
@@ -172,6 +172,16 @@ export const LoginPage: React.FC = () => {
             disabled={isLoading}
           />
 
+          <div style={{ textAlign: 'right', marginTop: '-0.75rem', marginBottom: '1rem' }}>
+            <Link
+              to="/forgot-password"
+              state={{ returnTo: returnLocation }}
+              style={{ fontSize: '0.8125rem', fontWeight: 600 }}
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           <Button
             type="submit"
             variant="primary"
@@ -186,7 +196,11 @@ export const LoginPage: React.FC = () => {
         {/* Switch to Register */}
         <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
           <span style={{ color: 'var(--color-text-secondary)' }}>Don't have an account? </span>
-          <Link to="/register" style={{ fontWeight: 600 }}>
+          <Link
+            to="/register"
+            state={location.state}
+            style={{ fontWeight: 600 }}
+          >
             Sign Up
           </Link>
         </div>

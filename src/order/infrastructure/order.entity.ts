@@ -18,7 +18,7 @@ import { OrderStatusEnum } from '../../utils/enums/order-status.enum';
 @Check('CHK_order_total_nonnegative', '"totalAmount" >= 0')
 @Check(
   'CHK_order_status',
-  `"status" IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')`,
+  `"status" IN ('pending', 'confirmed', 'delivered', 'cancelled')`,
 )
 @Check('CHK_order_payment_method', `"paymentMethod" IN ('cash_on_delivery')`)
 @Index('UQ_order_user_client_order_id', ['userId', 'clientOrderId'], {

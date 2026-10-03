@@ -34,7 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       fields: { id: payload.id },
     });
 
-    if (!user) {
+    if (!user || (payload.tokenVersion ?? 0) !== user.tokenVersion) {
       throw new UnauthorizedException();
     }
 

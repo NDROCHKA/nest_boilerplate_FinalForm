@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, ShieldAlert, Truck, CreditCard, Phone, MapPin, CheckCircle, XCircle, Package } from 'lucide-react';
+import { ChevronLeft, ShieldAlert, CreditCard, Phone, MapPin, CheckCircle, XCircle, Package } from 'lucide-react';
 import { orderAdminApi } from '../../../api/order-admin.api';
 import { Order, OrderStatusEnum } from '../../../types/order.types';
 import { Button } from '../../../components/ui/Button';
@@ -58,7 +58,6 @@ export const OrderDetailPage: React.FC = () => {
     switch (status) {
       case 'pending': return 'warning';
       case 'confirmed': return 'info';
-      case 'shipped': return 'info';
       case 'delivered': return 'success';
       case 'cancelled': return 'danger';
       default: return 'muted';
@@ -71,9 +70,7 @@ export const OrderDetailPage: React.FC = () => {
       case OrderStatusEnum.pending:
         return [OrderStatusEnum.confirmed, OrderStatusEnum.cancelled];
       case OrderStatusEnum.confirmed:
-        return [OrderStatusEnum.shipped, OrderStatusEnum.cancelled];
-      case OrderStatusEnum.shipped:
-        return [OrderStatusEnum.delivered];
+        return [OrderStatusEnum.delivered, OrderStatusEnum.cancelled];
       default:
         return [];
     }
@@ -93,8 +90,8 @@ export const OrderDetailPage: React.FC = () => {
         <ShieldAlert size={48} style={{ color: 'var(--color-danger)', marginBottom: '1rem' }} />
         <h2>Order Not Found</h2>
         <p style={{ margin: '0.5rem 0 1.5rem 0' }}>{errorMsg || 'We could not find the order details requested.'}</p>
-        <Link to="/admin/orders">
-          <Button variant="secondary">Back to Orders</Button>
+        <Link to="/admin/orders" className="btn btn-secondary">
+          Back to Orders
         </Link>
       </div>
     );
@@ -162,9 +159,6 @@ export const OrderDetailPage: React.FC = () => {
 
               if (nextSt === OrderStatusEnum.confirmed) {
                 btnVariant = 'primary';
-              } else if (nextSt === OrderStatusEnum.shipped) {
-                btnVariant = 'primary';
-                icon = <Truck size={16} />;
               } else if (nextSt === OrderStatusEnum.delivered) {
                 btnVariant = 'primary';
               } else if (nextSt === OrderStatusEnum.cancelled) {

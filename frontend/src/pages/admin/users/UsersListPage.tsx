@@ -129,10 +129,12 @@ export const UsersListPage: React.FC = () => {
       sortable: false,
       render: (item) => (
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link to={`/admin/users/${item.id}`}>
-            <Button variant="secondary" style={{ padding: '0.4rem', minWidth: 0 }}>
-              <Eye size={14} />
-            </Button>
+          <Link
+            to={`/admin/users/${item.id}`}
+            className="btn btn-secondary"
+            style={{ padding: '0.4rem', minWidth: 0 }}
+          >
+            <Eye size={14} />
           </Link>
           <Button
             variant="danger"

@@ -120,11 +120,13 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Link to="/" style={{ flex: 1 }}>
-              <Button variant="secondary" style={{ width: '100%', gap: '0.35rem', padding: '0.5rem' }}>
-                <Home size={14} />
-                Store
-              </Button>
+            <Link
+              to="/"
+              className="btn btn-secondary"
+              style={{ flex: 1, width: '100%', gap: '0.35rem', padding: '0.5rem' }}
+            >
+              <Home size={14} />
+              Store
             </Link>
             <Button
               variant="text"
@@ -161,11 +163,13 @@ export const AdminLayout: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Link to="/">
-            <Button variant="secondary" style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', gap: '0.25rem' }}>
-              <Home size={14} />
-              Store
-            </Button>
+          <Link
+            to="/"
+            className="btn btn-secondary"
+            style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', gap: '0.25rem' }}
+          >
+            <Home size={14} />
+            Store
           </Link>
           <Button
             variant="text"

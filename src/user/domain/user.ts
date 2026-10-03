@@ -28,6 +28,9 @@ export class User {
   @Expose()
   emailVerified: boolean;
 
+  @Exclude({ toPlainOnly: true })
+  tokenVersion: number;
+
   @Expose()
   role: RoleEnum;
 

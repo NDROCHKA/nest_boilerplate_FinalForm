@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Award, Heart, CheckCircle2, MapPin } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
+import { ArrowRight, Shield, Heart, CheckCircle2, MapPin } from 'lucide-react';
 
 import { CrusaderLogo } from '../../components/brand/CrusaderLogo';
 
@@ -62,11 +61,13 @@ export const AboutPage: React.FC = () => {
           Crusader Collective was founded in Lebanon to create streetwear that represents courage, conviction, and modern design. Every piece is constructed like armor for everyday endurance.
         </p>
 
-        <Link to="/products" style={{ marginTop: '0.5rem' }}>
-          <Button variant="primary" style={{ padding: '0.75rem 1.75rem', gap: '0.5rem' }}>
-            Explore Catalog
-            <ArrowRight size={18} />
-          </Button>
+        <Link
+          to="/products"
+          className="btn btn-primary"
+          style={{ marginTop: '0.5rem', padding: '0.75rem 1.75rem', gap: '0.5rem' }}
+        >
+          Explore Catalog
+          <ArrowRight size={18} />
         </Link>
       </section>
 
@@ -142,16 +143,6 @@ export const AboutPage: React.FC = () => {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
-          <div className="glass-card glow-card-red" style={{ padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--color-accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}>
-              <Award size={24} />
-            </div>
-            <h4 style={{ margin: 0 }}>Heavyweight Fabrics</h4>
-            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', margin: 0 }}>
-              We source ultra-soft 280-450 GSM french terry cotton and reinforced nylon for structure and comfort.
-            </p>
-          </div>
-
           <div className="glass-card glow-card-red" style={{ padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--color-accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}>
               <CheckCircle2 size={24} />

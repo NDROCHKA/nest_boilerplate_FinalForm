@@ -52,6 +52,8 @@ export class UserService {
         ...createUserDto,
         password: hashedPassword,
         emailVerified: false,
+        tokenVersion: 0,
+        role: RoleEnum.user,
       },
       queryRunner,
     );
@@ -202,6 +204,31 @@ export class UserService {
     queryRunner?: QueryRunner;
   }): Promise<void> {
     await this.userRepository.update(id, { emailVerified: true }, queryRunner);
+  }
+
+  async resetPassword({
+    id,
+    password,
+    queryRunner,
+  }: {
+    id: number;
+    password: string;
+    queryRunner?: QueryRunner;
+  }): Promise<void> {
+    const user = await this.findOne({ id, queryRunner });
+    if (!user) {
+      throw new UserNotFoundException({ id });
+    }
+
+    const hashedPassword = await this.hashPassword(password);
+    await this.userRepository.update(
+      id,
+      {
+        password: hashedPassword,
+        tokenVersion: user.tokenVersion + 1,
+      },
+      queryRunner,
+    );
   }
 
   private async hashPassword(password: string): Promise<string> {

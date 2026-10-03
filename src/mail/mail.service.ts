@@ -90,6 +90,48 @@ export class MailService implements OnModuleInit {
     }
   }
 
+  async sendPasswordResetOtp(
+    to: string,
+    otpCode: string,
+    userName?: string,
+  ): Promise<void> {
+    const defaultName = this.configService.get('mail.defaultName', {
+      infer: true,
+    });
+    const defaultEmail = this.configService.get('mail.defaultEmail', {
+      infer: true,
+    });
+    const greeting = userName ? `Hi ${this.escapeHtml(userName)}` : 'Hi there';
+
+    const html = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb;">
+        <h2 style="color: #111827; margin: 0 0 8px 0; font-size: 22px;">Reset your password</h2>
+        <p style="color: #6b7280; margin: 0 0 24px 0; font-size: 15px;">${greeting}, use the code below to continue resetting your password.</p>
+        <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; text-align: center; margin: 0 0 24px 0;">
+          <span style="font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #111827; font-family: 'Courier New', monospace;">${otpCode}</span>
+        </div>
+        <p style="color: #9ca3af; margin: 0; font-size: 13px;">This code expires in <strong>5 minutes</strong>. If you didn't request a password reset, you can safely ignore this email.</p>
+      </div>
+    `;
+
+    try {
+      await this.transporter.sendMail({
+        from: `"${defaultName}" <${defaultEmail}>`,
+        to,
+        subject: `${otpCode} is your password reset code`,
+        html,
+      });
+
+      this.logger.log(`Password reset email sent to ${to}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password reset email to ${to}`,
+        error instanceof Error ? error.stack : error,
+      );
+      throw error;
+    }
+  }
+
   async sendOrderConfirmed(
     to: string,
     orderId: number,

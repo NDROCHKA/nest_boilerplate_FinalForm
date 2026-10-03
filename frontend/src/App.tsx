@@ -41,6 +41,7 @@ import { UserDetailPage } from './pages/admin/users/UserDetailPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { VerifyOtpPage } from './pages/auth/VerifyOtpPage';
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 
 export const App: React.FC = () => {
   return (
@@ -71,6 +72,7 @@ export const App: React.FC = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/verify-email" element={<VerifyOtpPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
               {/* Super Admin Dashboard Routes */}
               <Route path="/admin" element={<AdminRoute />}>

@@ -359,7 +359,7 @@ export const ProductFormPage: React.FC = () => {
                     {isUploading ? 'Uploading...' : 'Upload File'}
                     <input
                       type="file"
-                      accept="image/*"
+                      accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
                       onChange={handleFileUpload}
                       disabled={isUploading || isSubmitting}
                       style={{ display: 'none' }}
@@ -430,12 +430,14 @@ export const ProductFormPage: React.FC = () => {
 
             {/* Save Buttons */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <Link to="/admin/products">
-                <Button variant="secondary" disabled={isSubmitting}>
-                  Cancel
-                </Button>
-              </Link>
-              <Button type="submit" variant="primary" isLoading={isSubmitting} style={{ minWidth: '150px' }} onClick={handleSubmit}>
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/admin/products')}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" isLoading={isSubmitting} style={{ minWidth: '150px' }}>
                 <Check size={16} />
                 Save Product
               </Button>

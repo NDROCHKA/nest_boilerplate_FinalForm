@@ -27,8 +27,12 @@ const validationOptions: ValidationPipeOptions = {
   errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
   exceptionFactory: (errors: ValidationError[]) => {
     return new UnprocessableEntityException({
-      status: HttpStatus.UNPROCESSABLE_ENTITY,
-      errors: generateErrors(errors),
+      statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      errorCode: 'VALIDATION_FAILED',
+      message: 'Please correct the highlighted fields and try again.',
+      details: {
+        fields: generateErrors(errors),
+      },
     });
   },
 };

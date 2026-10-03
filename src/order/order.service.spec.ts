@@ -162,6 +162,30 @@ describe('OrderService', () => {
     );
   });
 
+  it('moves a confirmed order directly to delivered', async () => {
+    const current = Object.assign(new Order(), {
+      id: 22,
+      status: OrderStatusEnum.confirmed,
+      items: [],
+    });
+    const delivered = Object.assign(new Order(), {
+      ...current,
+      status: OrderStatusEnum.delivered,
+    });
+    orderRepository.findOne.mockResolvedValue(current);
+    orderRepository.updateStatus.mockResolvedValue(delivered);
+
+    await expect(
+      service.updateStatus({ id: 22, status: OrderStatusEnum.delivered }),
+    ).resolves.toBe(delivered);
+    expect(orderRepository.updateStatus).toHaveBeenCalledWith(
+      22,
+      OrderStatusEnum.delivered,
+      OrderStatusEnum.confirmed,
+      undefined,
+    );
+  });
+
   it('rejects status jumps that skip fulfillment stages', async () => {
     orderRepository.findOne.mockResolvedValue(
       Object.assign(new Order(), {

@@ -95,8 +95,8 @@ export const ProductDetailPage: React.FC = () => {
         <ShieldAlert size={48} style={{ color: 'var(--color-danger)', marginBottom: '1rem' }} />
         <h2>Product Not Found</h2>
         <p style={{ margin: '0.5rem 0 1.5rem 0' }}>{errorMsg || 'We could not find the product you requested.'}</p>
-        <Link to="/products">
-          <Button variant="secondary">Back to Catalog</Button>
+        <Link to="/products" className="btn btn-secondary">
+          Back to Catalog
         </Link>
       </div>
     );
@@ -370,7 +370,7 @@ export const ProductDetailPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
               <Truck size={16} style={{ color: 'var(--color-accent)' }} />
-              <span>Cash on delivery available. Free delivery on all Lebanon orders.</span>
+              <span>Cash on delivery available. Flat $4 delivery across Lebanon.</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
               <Award size={16} style={{ color: 'var(--color-success)' }} />

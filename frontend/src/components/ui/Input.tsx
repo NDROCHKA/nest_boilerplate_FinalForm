@@ -7,14 +7,23 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, containerClassName = '', className = '', ...props }, ref) => {
+  (
+    { label, error, containerClassName = '', className = '', style, ...props },
+    ref,
+  ) => {
     return (
-      <div className={`form-group ${containerClassName}`} style={{ marginBottom: '1.25rem' }}>
+      <div
+        className={`form-group ${containerClassName}`}
+        style={{ marginBottom: '1.25rem' }}
+      >
         {label && <label>{label}</label>}
         <input
           ref={ref}
           className={`${className}`}
-          style={error ? { borderColor: 'var(--color-danger)' } : {}}
+          style={{
+            ...style,
+            ...(error ? { borderColor: 'var(--color-danger)' } : {}),
+          }}
           {...props}
         />
         {error && (
@@ -30,7 +39,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = 'Input';

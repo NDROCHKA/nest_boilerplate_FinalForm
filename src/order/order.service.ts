@@ -261,10 +261,9 @@ export class OrderService {
         OrderStatusEnum.cancelled,
       ],
       [OrderStatusEnum.confirmed]: [
-        OrderStatusEnum.shipped,
+        OrderStatusEnum.delivered,
         OrderStatusEnum.cancelled,
       ],
-      [OrderStatusEnum.shipped]: [OrderStatusEnum.delivered],
       [OrderStatusEnum.delivered]: [], // Terminal state
       [OrderStatusEnum.cancelled]: [], // Terminal state
     };

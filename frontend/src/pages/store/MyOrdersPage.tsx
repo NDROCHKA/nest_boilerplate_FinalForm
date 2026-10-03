@@ -4,7 +4,6 @@ import { ShoppingBag, Eye, Calendar, DollarSign } from 'lucide-react';
 import { orderApi } from '../../api/order.api';
 import { Order } from '../../types/order.types';
 import { usePagination } from '../../hooks/usePagination';
-import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Spinner } from '../../components/ui/Spinner';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -47,7 +46,6 @@ export const MyOrdersPage: React.FC = () => {
     switch (status) {
       case 'pending': return 'warning';
       case 'confirmed': return 'info';
-      case 'shipped': return 'info';
       case 'delivered': return 'success';
       case 'cancelled': return 'danger';
       default: return 'muted';
@@ -73,8 +71,8 @@ export const MyOrdersPage: React.FC = () => {
           description="It looks like you haven't placed any orders yet. Go back to our products page and find something you like!"
           icon={<ShoppingBag size={48} />}
           action={
-            <Link to="/products">
-              <Button variant="primary">Browse Store</Button>
+            <Link to="/products" className="btn btn-primary">
+              Browse Store
             </Link>
           }
         />
@@ -148,11 +146,13 @@ export const MyOrdersPage: React.FC = () => {
 
                 {/* Action */}
                 <div>
-                  <Link to={`/my-orders/${order.id}`}>
-                    <Button variant="secondary" style={{ gap: '0.35rem' }}>
-                      <Eye size={16} />
-                      Details
-                    </Button>
+                  <Link
+                    to={`/my-orders/${order.id}`}
+                    className="btn btn-secondary"
+                    style={{ gap: '0.35rem' }}
+                  >
+                    <Eye size={16} />
+                    Details
                   </Link>
                 </div>
               </div>

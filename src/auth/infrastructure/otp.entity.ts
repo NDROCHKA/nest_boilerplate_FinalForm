@@ -13,7 +13,7 @@ import { OtpTypeEnum } from '../../utils/enums/otp-type.enum';
 
 @Entity({ name: 'otp' })
 @Check('CHK_otp_attempts_nonnegative', '"attempts" >= 0')
-@Check('CHK_otp_type', `"type" IN ('EMAIL_VERIFICATION')`)
+@Check('CHK_otp_type', `"type" IN ('EMAIL_VERIFICATION', 'PASSWORD_RESET')`)
 @Index('IDX_otp_user_type_created', ['userId', 'type', 'createdAt'])
 export class OtpEntity {
   @PrimaryGeneratedColumn({ primaryKeyConstraintName: 'PK_otp' })
@@ -37,6 +37,9 @@ export class OtpEntity {
 
   @Column({ type: 'timestamp with time zone' })
   expiresAt: Date;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  verifiedAt: Date | null;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;

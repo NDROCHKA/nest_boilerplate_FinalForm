@@ -14,6 +14,14 @@ export const VerifyOtpPage: React.FC = () => {
   const { showToast } = useToast();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const returnLocation = (
+    location.state as {
+      returnTo?: { pathname?: string; search?: string; hash?: string };
+    } | null
+  )?.returnTo;
+  const returnTo = returnLocation?.pathname
+    ? `${returnLocation.pathname}${returnLocation.search ?? ''}${returnLocation.hash ?? ''}`
+    : '/';
 
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
   const [isLoading, setIsLoading] = useState(false);
@@ -100,7 +108,7 @@ export const VerifyOtpPage: React.FC = () => {
         try {
           await login({ email, password });
           showToast('Account verified & logged in successfully!', 'success');
-          navigate('/');
+          navigate(returnTo, { replace: true });
           return;
         } catch (loginErr) {
           console.error('Auto login after verification failed', loginErr);
@@ -108,7 +116,10 @@ export const VerifyOtpPage: React.FC = () => {
       }
 
       showToast(res.message || 'Email verified successfully! You can now log in.', 'success');
-      navigate('/login');
+      navigate('/login', {
+        replace: true,
+        state: { returnTo: returnLocation },
+      });
     } catch (err: any) {
       console.error(err);
       showToast(err.message || 'Verification failed. Please check the code and try again.', 'error');
@@ -328,7 +339,11 @@ export const VerifyOtpPage: React.FC = () => {
 
         {/* Back to login */}
         <div style={{ marginTop: '1.25rem', fontSize: '0.875rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.25rem' }}>
-          <Link to="/login" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none' }}>
+          <Link
+            to="/login"
+            state={{ returnTo: returnLocation }}
+            style={{ color: 'var(--color-text-secondary)', textDecoration: 'none' }}
+          >
             Back to Sign In
           </Link>
         </div>

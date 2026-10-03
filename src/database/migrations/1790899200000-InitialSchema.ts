@@ -14,6 +14,7 @@ export class InitialSchema1790899200000 implements MigrationInterface {
         "lastName" character varying(120),
         "profilePicture" character varying,
         "emailVerified" boolean NOT NULL DEFAULT false,
+        "tokenVersion" integer NOT NULL DEFAULT 0,
         "role" integer NOT NULL,
         "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -41,11 +42,12 @@ export class InitialSchema1790899200000 implements MigrationInterface {
         "type" character varying NOT NULL,
         "attempts" integer NOT NULL DEFAULT 0,
         "expiresAt" TIMESTAMP WITH TIME ZONE NOT NULL,
+        "verifiedAt" TIMESTAMP WITH TIME ZONE,
         "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         CONSTRAINT "PK_otp" PRIMARY KEY ("id"),
         CONSTRAINT "FK_otp_user" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE,
         CONSTRAINT "CHK_otp_attempts_nonnegative" CHECK ("attempts" >= 0),
-        CONSTRAINT "CHK_otp_type" CHECK ("type" IN ('EMAIL_VERIFICATION'))
+        CONSTRAINT "CHK_otp_type" CHECK ("type" IN ('EMAIL_VERIFICATION', 'PASSWORD_RESET'))
       )
     `);
     await queryRunner.query(
@@ -126,7 +128,7 @@ export class InitialSchema1790899200000 implements MigrationInterface {
         CONSTRAINT "FK_order_user" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT,
         CONSTRAINT "UQ_order_user_client_order_id" UNIQUE ("userId", "clientOrderId"),
         CONSTRAINT "CHK_order_total_nonnegative" CHECK ("totalAmount" >= 0),
-        CONSTRAINT "CHK_order_status" CHECK ("status" IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
+        CONSTRAINT "CHK_order_status" CHECK ("status" IN ('pending', 'confirmed', 'delivered', 'cancelled')),
         CONSTRAINT "CHK_order_payment_method" CHECK ("paymentMethod" IN ('cash_on_delivery'))
       )
     `);

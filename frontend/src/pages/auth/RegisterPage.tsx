@@ -1,15 +1,32 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth.api';
 import { useToast } from '../../context/ToastContext';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { ArrowLeft, X } from 'lucide-react';
 import { CrusaderLogo } from '../../components/brand/CrusaderLogo';
+import type { ApiError } from '../../types/api.types';
+
+const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}' -]*$/u;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_PATTERN = /^\+?[0-9]{8,15}$/;
+
+const getValidationFields = (error: ApiError): Record<string, string> => {
+  const fields = error.details?.fields;
+  if (!fields || typeof fields !== 'object') return {};
+
+  return Object.fromEntries(
+    Object.entries(fields).filter(
+      (entry): entry is [string, string] => typeof entry[1] === 'string',
+    ),
+  );
+};
 
 export const RegisterPage: React.FC = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -21,15 +38,35 @@ export const RegisterPage: React.FC = () => {
 
   const validate = () => {
     const tempErrors: typeof errors = {};
-    if (!firstName) tempErrors.firstName = 'First name is required';
-    if (!lastName) tempErrors.lastName = 'Last name is required';
-    if (!email) {
-      tempErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      tempErrors.email = 'Invalid email address';
+    const cleanFirstName = firstName.trim();
+    const cleanLastName = lastName.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhoneNumber = phoneNumber.replace(/[\s()-]/g, '');
+
+    if (!cleanFirstName) {
+      tempErrors.firstName = 'First name is required';
+    } else if (cleanFirstName.length < 2) {
+      tempErrors.firstName = 'First name must be at least 2 characters';
+    } else if (!NAME_PATTERN.test(cleanFirstName)) {
+      tempErrors.firstName =
+        'Use letters, spaces, apostrophes, or hyphens only';
     }
-    if (!phoneNumber) {
+    if (!cleanLastName) {
+      tempErrors.lastName = 'Last name is required';
+    } else if (cleanLastName.length < 2) {
+      tempErrors.lastName = 'Last name must be at least 2 characters';
+    } else if (!NAME_PATTERN.test(cleanLastName)) {
+      tempErrors.lastName = 'Use letters, spaces, apostrophes, or hyphens only';
+    }
+    if (!cleanEmail) {
+      tempErrors.email = 'Email is required';
+    } else if (!EMAIL_PATTERN.test(cleanEmail)) {
+      tempErrors.email = 'Enter a valid email address';
+    }
+    if (!cleanPhoneNumber) {
       tempErrors.phoneNumber = 'Phone number is required';
+    } else if (!PHONE_PATTERN.test(cleanPhoneNumber)) {
+      tempErrors.phoneNumber = 'Enter a valid phone number with 8 to 15 digits';
     }
     if (!password) {
       tempErrors.password = 'Password is required';
@@ -38,6 +75,10 @@ export const RegisterPage: React.FC = () => {
     } else if (password.length > 72) {
       tempErrors.password = 'Password must be at most 72 characters';
     }
+    setFirstName(cleanFirstName);
+    setLastName(cleanLastName);
+    setEmail(cleanEmail);
+    setPhoneNumber(cleanPhoneNumber);
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -49,19 +90,36 @@ export const RegisterPage: React.FC = () => {
     setIsLoading(true);
     try {
       const res = await authApi.register({
-        email,
-        phoneNumber,
+        email: email.trim().toLowerCase(),
+        phoneNumber: phoneNumber.replace(/[\s()-]/g, ''),
         password,
-        firstName,
-        lastName,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
       });
-      showToast(res.message || 'Account created successfully! Please verify your email.', 'success');
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`, {
-        state: { email, password },
+      showToast(
+        res.message ||
+          'Account created successfully! Please verify your email.',
+        'success',
+      );
+      const normalizedEmail = email.trim().toLowerCase();
+      navigate(`/verify-email?email=${encodeURIComponent(normalizedEmail)}`, {
+        state: {
+          email: normalizedEmail,
+          password,
+          returnTo: (location.state as { returnTo?: unknown } | null)?.returnTo,
+        },
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      showToast(err.message || 'Registration failed. Try again.', 'error');
+      const apiError = err as ApiError;
+      const fieldErrors = getValidationFields(apiError);
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(fieldErrors);
+      }
+      showToast(
+        apiError.message || 'Registration failed. Please try again.',
+        'error',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -145,15 +203,26 @@ export const RegisterPage: React.FC = () => {
           <div style={{ marginBottom: '0.75rem' }}>
             <CrusaderLogo size={64} variant="image" />
           </div>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.03em' }}>
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+              letterSpacing: '-0.03em',
+            }}
+          >
             Create Account
           </h2>
-          <p style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>Join Crusaders store today</p>
+          <p style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>
+            Join Crusaders store today
+          </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div className="register-name-row" style={{ display: 'flex', gap: '1rem' }}>
+          <div
+            className="register-name-row"
+            style={{ display: 'flex', gap: '1rem' }}
+          >
             <Input
               label="First Name"
               placeholder="Jane"
@@ -161,6 +230,7 @@ export const RegisterPage: React.FC = () => {
               onChange={(e) => setFirstName(e.target.value)}
               error={errors.firstName}
               disabled={isLoading}
+              autoComplete="given-name"
               containerClassName="form-col"
               style={{ flex: 1 }}
             />
@@ -171,6 +241,7 @@ export const RegisterPage: React.FC = () => {
               onChange={(e) => setLastName(e.target.value)}
               error={errors.lastName}
               disabled={isLoading}
+              autoComplete="family-name"
               containerClassName="form-col"
               style={{ flex: 1 }}
             />
@@ -184,12 +255,15 @@ export const RegisterPage: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             error={errors.email}
             disabled={isLoading}
+            autoComplete="email"
           />
 
           <Input
             label="Phone Number"
-            type="text"
-            placeholder="+11234567890"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="+961 70 123 456"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             error={errors.phoneNumber}
@@ -204,6 +278,7 @@ export const RegisterPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             error={errors.password}
             disabled={isLoading}
+            autoComplete="new-password"
           />
 
           <Button
@@ -218,9 +293,17 @@ export const RegisterPage: React.FC = () => {
         </form>
 
         {/* Switch to Login */}
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
-          <span style={{ color: 'var(--color-text-secondary)' }}>Already have an account? </span>
-          <Link to="/login" style={{ fontWeight: 600 }}>
+        <div
+          style={{
+            marginTop: '1.5rem',
+            textAlign: 'center',
+            fontSize: '0.875rem',
+          }}
+        >
+          <span style={{ color: 'var(--color-text-secondary)' }}>
+            Already have an account?{' '}
+          </span>
+          <Link to="/login" state={location.state} style={{ fontWeight: 600 }}>
             Sign In
           </Link>
         </div>

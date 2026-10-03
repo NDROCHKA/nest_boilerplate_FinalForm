@@ -5,7 +5,6 @@ import { orderAdminApi } from '../../../api/order-admin.api';
 import { Order, OrderStatusEnum } from '../../../types/order.types';
 import { usePagination } from '../../../hooks/usePagination';
 import { useToast } from '../../../context/ToastContext';
-import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { Table, Column } from '../../../components/ui/Table';
 import { Pagination } from '../../../components/ui/Pagination';
@@ -60,7 +59,6 @@ export const OrdersListPage: React.FC = () => {
     switch (status) {
       case 'pending': return 'warning';
       case 'confirmed': return 'info';
-      case 'shipped': return 'info';
       case 'delivered': return 'success';
       case 'cancelled': return 'danger';
       default: return 'muted';
@@ -103,10 +101,12 @@ export const OrdersListPage: React.FC = () => {
       header: 'Actions',
       sortable: false,
       render: (item) => (
-        <Link to={`/admin/orders/${item.id}`}>
-          <Button variant="secondary" style={{ padding: '0.4rem', minWidth: 0 }}>
-            <Eye size={14} />
-          </Button>
+        <Link
+          to={`/admin/orders/${item.id}`}
+          className="btn btn-secondary"
+          style={{ padding: '0.4rem', minWidth: 0 }}
+        >
+          <Eye size={14} />
         </Link>
       ),
     },

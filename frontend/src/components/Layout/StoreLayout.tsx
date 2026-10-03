@@ -156,11 +156,13 @@ export const StoreLayout: React.FC = () => {
           {/* Action Area */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {isAdmin && (
-              <Link to="/admin">
-                <Button variant="secondary" style={{ padding: '0.5rem 0.8rem', gap: '0.35rem' }}>
-                  <ShieldAlert size={16} />
-                  Admin
-                </Button>
+              <Link
+                to="/admin"
+                className="btn btn-secondary"
+                style={{ padding: '0.5rem 0.8rem', gap: '0.35rem' }}
+              >
+                <ShieldAlert size={16} />
+                Admin
               </Link>
             )}
 
@@ -229,8 +231,8 @@ export const StoreLayout: React.FC = () => {
                 </Button>
               </div>
             ) : (
-              <Link to="/login" className="desktop-login-btn">
-                <Button variant="primary">Login</Button>
+              <Link to="/login" className="desktop-login-btn btn btn-primary">
+                Login
               </Link>
             )}
 
@@ -283,10 +285,13 @@ export const StoreLayout: React.FC = () => {
           }}
         >
           {!isAuthenticated && (
-            <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="primary" style={{ width: '100%', height: '3rem', fontSize: '1rem' }}>
-                Login to Account
-              </Button>
+            <Link
+              to="/login"
+              className="btn btn-primary"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ width: '100%', height: '3rem', fontSize: '1rem' }}
+            >
+              Login to Account
             </Link>
           )}
 

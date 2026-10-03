@@ -99,10 +99,12 @@ export const CategoriesListPage: React.FC = () => {
       sortable: false,
       render: (item) => (
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link to={`/admin/categories/${item.id}`}>
-            <Button variant="secondary" style={{ padding: '0.4rem', minWidth: 0 }}>
-              <Edit size={14} />
-            </Button>
+          <Link
+            to={`/admin/categories/${item.id}`}
+            className="btn btn-secondary"
+            style={{ padding: '0.4rem', minWidth: 0 }}
+          >
+            <Edit size={14} />
           </Link>
           <Button
             variant="danger"
@@ -124,11 +126,9 @@ export const CategoriesListPage: React.FC = () => {
           <h1 style={{ fontFamily: 'var(--font-display)' }}>Categories Directory</h1>
           <p style={{ color: 'var(--color-text-secondary)' }}>Manage store departments and styles</p>
         </div>
-        <Link to="/admin/categories/new">
-          <Button variant="primary" style={{ gap: '0.35rem' }}>
-            <Plus size={18} />
-            Add Category
-          </Button>
+        <Link to="/admin/categories/new" className="btn btn-primary" style={{ gap: '0.35rem' }}>
+          <Plus size={18} />
+          Add Category
         </Link>
       </div>
 

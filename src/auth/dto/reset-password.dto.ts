@@ -4,21 +4,30 @@ import {
   IsNotEmpty,
   IsString,
   Length,
-  Matches,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+
 import { lowerCaseTransformer } from '../../utils/transformers/lower-case.transformer';
 
-export class VerifyOtpDto {
+export class ResetPasswordDto {
   @ApiProperty({ example: 'user@example.com' })
   @Transform(lowerCaseTransformer)
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: '123456', description: '6-digit verification code' })
+  @ApiProperty({
+    description: 'Single-use token returned after OTP verification',
+  })
   @IsString()
-  @Length(6, 6)
-  @Matches(/^\d{6}$/)
-  otpCode: string;
+  @Length(64, 64)
+  resetToken: string;
+
+  @ApiProperty({ minLength: 8, maxLength: 72 })
+  @IsString()
+  @MinLength(8)
+  @MaxLength(72)
+  newPassword: string;
 }

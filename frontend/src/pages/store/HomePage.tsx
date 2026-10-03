@@ -96,16 +96,20 @@ export const HomePage: React.FC = () => {
 
           {/* Action Trigger Buttons */}
           <div className="hero-buttons" style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-            <Link to="/products">
-              <Button variant="primary" style={{ padding: '0.75rem 1.75rem', fontSize: '0.975rem', gap: '0.5rem' }}>
-                Shop Catalog
-                <ArrowRight size={18} />
-              </Button>
+            <Link
+              to="/products"
+              className="btn btn-primary"
+              style={{ padding: '0.75rem 1.75rem', fontSize: '0.975rem', gap: '0.5rem' }}
+            >
+              Shop Catalog
+              <ArrowRight size={18} />
             </Link>
-            <Link to="/size-guide">
-              <Button variant="secondary" style={{ padding: '0.75rem 1.25rem', fontSize: '0.875rem', gap: '0.4rem' }}>
-                Size Guide 📏
-              </Button>
+            <Link
+              to="/size-guide"
+              className="btn btn-secondary"
+              style={{ padding: '0.75rem 1.25rem', fontSize: '0.875rem', gap: '0.4rem' }}
+            >
+              Size Guide 📏
             </Link>
           </div>
         </div>

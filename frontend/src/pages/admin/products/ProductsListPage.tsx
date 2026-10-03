@@ -200,10 +200,12 @@ export const ProductsListPage: React.FC = () => {
       sortable: false,
       render: (item) => (
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link to={`/admin/products/${item.id}`}>
-            <Button variant="secondary" style={{ padding: '0.4rem', minWidth: 0 }}>
-              <Edit size={14} />
-            </Button>
+          <Link
+            to={`/admin/products/${item.id}`}
+            className="btn btn-secondary"
+            style={{ padding: '0.4rem', minWidth: 0 }}
+          >
+            <Edit size={14} />
           </Link>
           <Button
             variant="danger"
@@ -225,11 +227,9 @@ export const ProductsListPage: React.FC = () => {
           <h1 style={{ fontFamily: 'var(--font-display)' }}>Products Inventory</h1>
           <p style={{ color: 'var(--color-text-secondary)' }}>Manage store listings, sizes, colors, and stock</p>
         </div>
-        <Link to="/admin/products/new">
-          <Button variant="primary" style={{ gap: '0.35rem' }}>
-            <Plus size={18} />
-            Add Product
-          </Button>
+        <Link to="/admin/products/new" className="btn btn-primary" style={{ gap: '0.35rem' }}>
+          <Plus size={18} />
+          Add Product
         </Link>
       </div>
 

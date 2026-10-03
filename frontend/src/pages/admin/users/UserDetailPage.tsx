@@ -71,8 +71,8 @@ export const UserDetailPage: React.FC = () => {
         <ShieldAlert size={48} style={{ color: 'var(--color-danger)', marginBottom: '1rem' }} />
         <h2>User Account Not Found</h2>
         <p style={{ margin: '0.5rem 0 1.5rem 0' }}>{errorMsg || 'We could not find the user details requested.'}</p>
-        <Link to="/admin/users">
-          <Button variant="secondary">Back to User Directory</Button>
+        <Link to="/admin/users" className="btn btn-secondary">
+          Back to User Directory
         </Link>
       </div>
     );
@@ -175,11 +175,13 @@ export const UserDetailPage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-            <Link to="/admin/users">
-              <Button variant="secondary" disabled={isUpdating}>
-                Cancel
-              </Button>
-            </Link>
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/admin/users')}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
             <Button type="submit" variant="primary" isLoading={isUpdating} style={{ minWidth: '150px' }}>
               <Check size={16} />
               Save Changes

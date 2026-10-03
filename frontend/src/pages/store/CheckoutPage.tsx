@@ -8,6 +8,18 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { ORDER_SHIPPING_FEE } from '../../utils/constants';
 
+const createClientOrderId = (): string => {
+  if (typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0'));
+  return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10).join('')}`;
+};
+
 export const CheckoutPage: React.FC = () => {
   const { items, totalAmount, clearCart } = useCart();
   const { showToast } = useToast();
@@ -17,15 +29,15 @@ export const CheckoutPage: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const clientOrderId = useRef(crypto.randomUUID());
+  const clientOrderId = useRef(createClientOrderId());
 
   if (items.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '3rem' }}>
         <h3>Your cart is empty</h3>
         <p style={{ margin: '0.5rem 0 1.5rem 0' }}>Add items to your cart before checking out.</p>
-        <Link to="/products">
-          <Button variant="primary">Shop Products</Button>
+        <Link to="/products" className="btn btn-primary">
+          Shop Products
         </Link>
       </div>
     );
@@ -33,8 +45,8 @@ export const CheckoutPage: React.FC = () => {
 
   const validate = () => {
     const tempErrors: typeof errors = {};
-    if (!shippingAddress) tempErrors.shippingAddress = 'Shipping address is required';
-    if (!phoneNumber) tempErrors.phoneNumber = 'Phone number is required';
+    if (!shippingAddress.trim()) tempErrors.shippingAddress = 'Shipping address is required';
+    if (!phoneNumber.trim()) tempErrors.phoneNumber = 'Phone number is required';
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -53,8 +65,8 @@ export const CheckoutPage: React.FC = () => {
           size: item.selectedSize,
           color: item.selectedColor,
         })),
-        shippingAddress,
-        phoneNumber,
+        shippingAddress: shippingAddress.trim(),
+        phoneNumber: phoneNumber.trim(),
       };
 
       const result = await orderApi.create(orderPayload);
@@ -135,12 +147,14 @@ export const CheckoutPage: React.FC = () => {
           </div>
 
           <div className="checkout-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-            <Link to="/cart">
-              <Button variant="secondary" disabled={isSubmitting}>
-                <ArrowLeft size={16} />
-                Back to Cart
-              </Button>
-            </Link>
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/cart')}
+              disabled={isSubmitting}
+            >
+              <ArrowLeft size={16} />
+              Back to Cart
+            </Button>
             <Button type="submit" variant="primary" isLoading={isSubmitting} style={{ minWidth: '150px' }}>
               Place COD Order
             </Button>
