@@ -33,14 +33,6 @@ class EnvironmentVariablesValidator {
   @IsOptional()
   FRONTEND_DOMAIN: string;
 
-  @IsUrl({ require_tld: false })
-  @IsOptional()
-  ADMIN_DOMAIN: string;
-
-  @IsUrl({ require_tld: false })
-  @IsOptional()
-  BACKEND_DOMAIN: string;
-
   @IsString()
   @IsOptional()
   API_PREFIX: string;
@@ -91,9 +83,7 @@ export default registerAs<AppConfig>('app', () => {
       nodeEnv: process.env.NODE_ENV,
       name: process.env.APP_NAME || 'app',
       workingDirectory: process.env.PWD || process.cwd(),
-      adminDomain: process.env.ADMIN_DOMAIN,
       frontendDomain: process.env.FRONTEND_DOMAIN,
-      backendDomain: process.env.TEST_BACKEND_DOMAIN ?? 'http://localhost',
       uploadsDirectory: resolveUploadsDirectory(),
       trustProxyHops: process.env.TRUST_PROXY_HOPS
         ? parseInt(process.env.TRUST_PROXY_HOPS, 10)
@@ -112,9 +102,7 @@ export default registerAs<AppConfig>('app', () => {
       nodeEnv: process.env.NODE_ENV || 'development',
       name: process.env.APP_NAME || 'app',
       workingDirectory: process.env.PWD || process.cwd(),
-      adminDomain: process.env.ADMIN_DOMAIN,
       frontendDomain: process.env.FRONTEND_DOMAIN,
-      backendDomain: process.env.BACKEND_DOMAIN ?? 'http://localhost',
       uploadsDirectory: resolveUploadsDirectory(),
       trustProxyHops: process.env.TRUST_PROXY_HOPS
         ? parseInt(process.env.TRUST_PROXY_HOPS, 10)
